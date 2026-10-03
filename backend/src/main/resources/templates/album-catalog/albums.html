@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MelodyMart | Explore Albums</title>
+    <meta name="description" content="Explore and purchase high-quality digital music albums on MelodyMart.">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+<!-- Navigation -->
+<div th:replace="~{fragments/listener-nav :: navbar(activeItem='albums')}"></div>
+
+<main class="container">
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1 class="page-title"><i class="fa-solid fa-compact-disc" style="color:var(--brand-primary); font-size:0.9em;"></i> Explore Albums</h1>
+        <p class="page-subtitle">Discover albums across every genre — electronic, indie rock, jazz, folk, and classical.</p>
+    </div>
+
+    <!-- Filter & Search -->
+    <section class="filter-section">
+        <form th:action="@{/albums}" method="get" class="filter-form" id="filterForm">
+            <div class="search-input-group">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="searchInput" name="search" class="form-control"
+                       placeholder="Search albums by title or artist..."
+                       th:value="${currentSearch}">
+            </div>
+            <div class="select-group">
+                <select id="genreSelect" name="genreId" class="form-control select-control">
+                    <option value="">All Genres</option>
+                    <option th:each="genre : ${genres}"
+                            th:value="${genre.genreId}"
+                            th:text="${genre.genreName}"
+                            th:selected="${genre.genreId == currentGenreId}">Genre</option>
+                </select>
+            </div>
+            <div class="select-group">
+                <select id="artistSelect" name="artistId" class="form-control select-control">
+                    <option value="">All Artists</option>
+                    <option th:each="artist : ${artists}"
+                            th:value="${artist.artistId}"
+                            th:text="${artist.artistName}"
+                            th:selected="${artist.artistId == currentArtistId}">Artist</option>
+                </select>
+            </div>
+            <button type="submit" id="filterBtn" class="btn-primary">
+                <i class="fa-solid fa-filter"></i> Filter
+            </button>
+            <a th:href="@{/albums}" id="resetBtn" class="btn-reset">
+                <i class="fa-solid fa-xmark"></i> Reset
+            </a>
+        </form>
+    </section>
+
+    <!-- Results count -->
+    <p class="results-count" th:unless="${#lists.isEmpty(albums)}">
+        Showing <strong th:text="${#lists.size(albums)}">0</strong> album(s)
+        <span th:if="${currentSearch != null and !currentSearch.isEmpty()}">
+            matching "<strong th:text="${currentSearch}"></strong>"
+        </span>
+    </p>
+
+    <!-- Empty State -->
+    <div th:if="${#lists.isEmpty(albums)}" class="empty-state">
+        <i class="fa-solid fa-compact-disc"></i>
+        <h3>No Albums Found</h3>
+        <p>Try adjusting your search or filter criteria.</p>
+        <a th:href="@{/albums}" class="btn-primary" style="margin-top:1rem;">Clear Filters</a>
+    </div>
+
+    <!-- Album Grid -->
+    <div th:unless="${#lists.isEmpty(albums)}" class="albums-grid">
+        <article th:each="album : ${albums}" class="album-card" th:id="'album-card-' + ${album.albumId}">
+            <div class="cover-wrapper">
+                <span th:if="${album.catalog != null}" class="catalog-tag">
+                    <i class="fa-solid fa-layer-group"></i> Bundle
+                </span>
+                <span class="genre-badge" th:text="${album.genre.genreName}">Genre</span>
+                <img th:src="${album.coverImageUrl != null and !album.coverImageUrl.isEmpty()}
+                                ? @{${album.coverImageUrl}}
+                                : 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&auto=format&fit=crop&q=60'"
+                     th:alt="${album.albumTitle}"
+                     class="cover-img"
+                     onerror="this.src='https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&auto=format&fit=crop&q=60'">
+            </div>
+            <div class="album-details">
+                <div>
+                    <a th:href="@{/albums/{id}(id=${album.albumId})}"
+                       class="album-title"
+                       th:text="${album.albumTitle}">Album Title</a>
+                    <p class="artist-name">
+                        <i class="fa-solid fa-user" style="font-size:0.75rem; color:var(--text-muted);"></i>
+                        <span th:text="${album.artist.artistName}">Artist</span>
+                    </p>
+                </div>
+                <div class="card-footer">
+                    <span class="album-price"
+                          th:text="'$' + ${#numbers.formatDecimal(album.price, 1, 2)}">$9.99</span>
+                    <div style="display:flex; gap:0.4rem; align-items:center;">
+                        <a th:href="@{/albums/{id}(id=${album.albumId})}" class="btn-secondary btn-sm">
+                            View Album
+                        </a>
+                        <form th:action="@{/cart/add}" method="post" style="display:inline;">
+                            <input type="hidden" name="albumId" th:value="${album.albumId}">
+                            <button type="submit" class="btn-primary btn-sm" title="Add to Cart">
+                                <i class="fa-solid fa-cart-plus"></i> Add
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </article>
+    </div>
+
+</main>
+
+<footer class="footer">
+    <p>&copy; 2026 MelodyMart Digital Music Store &mdash; All rights reserved.</p>
+</footer>
+
+</body>
+</html>

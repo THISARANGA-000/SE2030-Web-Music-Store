@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MelodyMart Admin | Complaints</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+<div class="admin-layout">
+    <div th:replace="~{admin/fragments/sidebar :: sidebar(activeItem='complaints')}"></div>
+    <div class="admin-content">
+        <div class="admin-topbar">
+            <nav class="admin-breadcrumb">
+                <a th:href="@{/admin/dashboard}">Dashboard</a>
+                <span class="admin-breadcrumb-sep">/</span>
+                <span class="admin-breadcrumb-current">Complaints</span>
+            </nav>
+        </div>
+        <main class="admin-main">
+            <div class="admin-page-header">
+                <div>
+                    <h1 class="admin-page-title">Complaint Management</h1>
+                    <p class="admin-page-subtitle">View and manage customer complaints and support responses.</p>
+                </div>
+            </div>
+
+            <div th:if="${successMsg}" class="alert alert-success"><i class="fa-solid fa-circle-check"></i> <span th:text="${successMsg}"></span></div>
+            <div th:if="${errorMsg}"   class="alert alert-error"><i class="fa-solid fa-circle-xmark"></i> <span th:text="${errorMsg}"></span></div>
+
+            <div class="admin-table-wrap">
+                <!-- Toolbar: Filter buttons and Search box -->
+                <div class="admin-table-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; padding:1.25rem;">
+                    <!-- Status Filter Tabs -->
+                    <div style="display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
+                        <button type="button" class="btn-secondary active-filter-btn" onclick="filterByStatus('all', this)"
+                                style="padding:0.35rem 0.75rem; font-size:0.8rem; border-radius:var(--radius-full); font-weight:600;">
+                            All
+                        </button>
+                        <button type="button" class="btn-secondary" onclick="filterByStatus('open', this)"
+                                style="padding:0.35rem 0.75rem; font-size:0.8rem; border-radius:var(--radius-full);">
+                            Pending / Open
+                        </button>
+                        <button type="button" class="btn-secondary" onclick="filterByStatus('in progress', this)"
+                                style="padding:0.35rem 0.75rem; font-size:0.8rem; border-radius:var(--radius-full);">
+                            In Progress
+                        </button>
+                        <button type="button" class="btn-secondary" onclick="filterByStatus('resolved', this)"
+                                style="padding:0.35rem 0.75rem; font-size:0.8rem; border-radius:var(--radius-full);">
+                            Resolved
+                        </button>
+                        <button type="button" class="btn-secondary" onclick="filterByStatus('closed', this)"
+                                style="padding:0.35rem 0.75rem; font-size:0.8rem; border-radius:var(--radius-full);">
+                            Closed
+                        </button>
+                    </div>
+
+                    <!-- Search Input -->
+                    <div style="display:flex; align-items:center; gap:0.5rem;">
+                        <input type="text" id="complaintSearchInput" onkeyup="applyComplaintFilters()"
+                               placeholder="Search ID, listener, or subject..."
+                               class="form-control" style="font-size:0.82rem; padding:0.35rem 0.75rem; width:260px;">
+                    </div>
+                </div>
+
+                <div style="overflow-x:auto;">
+                    <table class="admin-table" id="complaintsTable">
+                        <thead>
+                            <tr>
+                                <th style="width:85px;">ID</th>
+                                <th>Listener</th>
+                                <th>Subject</th>
+                                <th style="width:115px;">Date</th>
+                                <th style="width:130px;">Status</th>
+                                <th>Response</th>
+                                <th style="width:230px; text-align:right;">Actions / Quick Update</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${complaints.isEmpty()}" id="noComplaintsRow">
+                                <td colspan="7" style="text-align:center; padding:3.5rem; color:var(--text-muted);">
+                                    <i class="fa-regular fa-folder-open" style="font-size:2rem; display:block; margin-bottom:0.5rem;"></i>
+                                    <strong>No complaints found.</strong>
+                                </td>
+                            </tr>
+                            <tr th:each="c : ${complaints}" class="complaint-row"
+                                th:data-status="${c[4] != null ? c[4].toString().toLowerCase() : ''}">
+                                <td><strong th:text="'#' + ${c[0]}">#1</strong></td>
+                                <td>
+                                    <span style="font-weight:600; color:var(--text-primary);" th:text="${c[1]}">Listener</span>
+                                </td>
+                                <td>
+                                    <a th:href="@{/admin/support/complaints/{id}(id=${c[0]})}"
+                                       style="font-weight:600; color:var(--brand-primary); text-decoration:none;" th:text="${c[2]}">
+                                        Subject
+                                    </a>
+                                </td>
+                                <td th:text="${c[3] != null ? c[3].toString().substring(0,10) : '—'}">—</td>
+                                <td>
+                                    <span th:switch="${c[4]}">
+                                        <span th:case="'Open'"        class="chip chip-red"><i class="fa-solid fa-clock"></i> Pending</span>
+                                        <span th:case="'Pending'"     class="chip chip-yellow"><i class="fa-solid fa-clock"></i> Pending</span>
+                                        <span th:case="'In Progress'" class="chip chip-yellow"><i class="fa-solid fa-spinner"></i> In Progress</span>
+                                        <span th:case="'InProgress'"  class="chip chip-yellow"><i class="fa-solid fa-spinner"></i> In Progress</span>
+                                        <span th:case="'Resolved'"    class="chip chip-green"><i class="fa-solid fa-circle-check"></i> Resolved</span>
+                                        <span th:case="'Closed'"      class="chip chip-gray"><i class="fa-solid fa-lock"></i> Closed</span>
+                                        <span th:case="*"             class="chip chip-gray" th:text="${c[4]}">—</span>
+                                    </span>
+                                </td>
+                                <td style="max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--text-secondary);"
+                                    th:text="${c[5] != null and !c[5].isEmpty() ? c[5] : '—'}"
+                                    th:title="${c[5]}">—</td>
+                                <td style="text-align:right;">
+                                    <div style="display:inline-flex; align-items:center; gap:0.4rem; justify-content:flex-end;">
+                                        <a th:href="@{/admin/support/complaints/{id}(id=${c[0]})}" class="btn-secondary"
+                                           style="padding:0.35rem 0.65rem; font-size:0.78rem;" title="View Complaint Details">
+                                            <i class="fa-solid fa-eye"></i> View
+                                        </a>
+                                        <form th:action="@{/admin/support/complaints/{id}/status(id=${c[0]})}" method="post"
+                                              style="display:inline-flex; gap:0.3rem; align-items:center;">
+                                            <select name="status" class="form-control select-control" style="padding:0.25rem 0.4rem; font-size:0.75rem; width:auto;">
+                                                <option value="Open"        th:selected="${c[4] == 'Open' or c[4] == 'Pending'}">Pending</option>
+                                                <option value="In Progress" th:selected="${c[4] == 'In Progress' or c[4] == 'InProgress'}">In Progress</option>
+                                                <option value="Resolved"    th:selected="${c[4] == 'Resolved'}">Resolved</option>
+                                                <option value="Closed"      th:selected="${c[4] == 'Closed'}">Closed</option>
+                                            </select>
+                                            <input type="hidden" name="response" th:value="${c[5]}">
+                                            <button type="submit" class="btn-primary" style="padding:0.25rem 0.5rem; font-size:0.75rem;" title="Quick Status Save">
+                                                <i class="fa-solid fa-check"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+        <footer class="admin-footer">&copy; 2026 MelodyMart &mdash; All rights reserved.</footer>
+    </div>
+</div>
+
+<style>
+.active-filter-btn {
+    background: var(--brand-primary) !important;
+    color: #ffffff !important;
+    border-color: var(--brand-primary) !important;
+}
+</style>
+
+<script>
+var currentStatusFilter = 'all';
+
+function filterByStatus(status, btn) {
+    currentStatusFilter = status.toLowerCase();
+    var buttons = btn.parentElement.getElementsByTagName('button');
+    for (var i = 0; i < buttons.length; i++) {
+        buttons[i].classList.remove('active-filter-btn');
+    }
+    btn.classList.add('active-filter-btn');
+    applyComplaintFilters();
+}
+
+function applyComplaintFilters() {
+    var search = document.getElementById("complaintSearchInput").value.toLowerCase();
+    var rows = document.querySelectorAll(".complaint-row");
+
+    rows.forEach(function(row) {
+        var rowText = row.textContent.toLowerCase();
+        var rowStatus = (row.getAttribute("data-status") || "").toLowerCase();
+
+        var matchesSearch = rowText.indexOf(search) > -1;
+        var matchesStatus = true;
+
+        if (currentStatusFilter !== 'all') {
+            if (currentStatusFilter === 'open') {
+                matchesStatus = (rowStatus === 'open' || rowStatus === 'pending');
+            } else if (currentStatusFilter === 'in progress') {
+                matchesStatus = (rowStatus === 'in progress' || rowStatus === 'inprogress');
+            } else {
+                matchesStatus = (rowStatus === currentStatusFilter);
+            }
+        }
+
+        if (matchesSearch && matchesStatus) {
+            row.style.display = "";
+        } else {
+            row.style.display = "none";
+        }
+    });
+}
+</script>
+</body>
+</html>
