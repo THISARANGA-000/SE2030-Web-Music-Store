@@ -1,0 +1,4 @@
+com\melodymart\BackendApplicationTests.class
+com\melodymart\config\MelodyMartApplicationSettingsTest.class
+com\melodymart\MelodyMartAdminFeaturesTest.class
+com\melodymart\MelodyMartFullFeaturesIntegrationTest.class

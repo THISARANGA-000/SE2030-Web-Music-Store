@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MelodyMart | Admin Dashboard</title>
+    <meta name="description" content="MelodyMart administrator dashboard — store statistics by role.">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+<div class="admin-layout">
+
+    <!-- Sidebar -->
+    <div th:replace="~{admin/fragments/sidebar :: sidebar(activeItem='dashboard')}"></div>
+
+    <!-- Main content -->
+    <div class="admin-content">
+
+        <!-- Topbar -->
+        <div class="admin-topbar">
+            <div class="admin-topbar-left">
+                <nav class="admin-breadcrumb">
+                    <span class="admin-breadcrumb-current"><i class="fa-solid fa-gauge"></i> Dashboard</span>
+                </nav>
+            </div>
+            <div class="admin-topbar-right">
+                <span style="font-size:0.8rem; color:var(--text-muted);"
+                      th:text="${user != null ? user.email : ''}">admin@melodymart.com</span>
+            </div>
+        </div>
+
+        <main class="admin-main">
+
+            <!-- Page header -->
+            <div class="admin-page-header">
+                <div>
+                    <h1 class="admin-page-title">
+                        <!-- Role-specific title -->
+                        <span th:if="${dashboardType == 'super'}">Super Admin Dashboard</span>
+                        <span th:if="${dashboardType == 'catalog'}">Catalog Dashboard</span>
+                        <span th:if="${dashboardType == 'order'}">Orders &amp; Sales Dashboard</span>
+                        <span th:if="${dashboardType == 'support'}">Support Dashboard</span>
+                    </h1>
+                    <p class="admin-page-subtitle">
+                        Welcome back, <strong th:text="${user != null ? user.firstName : 'Admin'}">Admin</strong>.
+                        Here's your at-a-glance overview.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Flash messages -->
+            <div th:if="${successMsg}" class="alert alert-success" style="margin-bottom:1.5rem;">
+                <i class="fa-solid fa-circle-check"></i> <span th:text="${successMsg}"></span>
+            </div>
+            <div th:if="${errorMsg}" class="alert alert-error" style="margin-bottom:1.5rem;">
+                <i class="fa-solid fa-circle-xmark"></i> <span th:text="${errorMsg}"></span>
+            </div>
+
+            <!-- ══ SUPER ADMIN STATS ══════════════════════════════════ -->
+            <div th:if="${dashboardType == 'super'}" class="stats-grid" id="statsGrid">
+
+                <div class="stat-card" style="--stat-color:linear-gradient(90deg,#7c3aed,#a855f7);--stat-icon-bg:rgba(124,58,237,0.15);--stat-icon-color:#a855f7;">
+                    <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+                    <div class="stat-value" th:text="${stats.userCount}">0</div>
+                    <div class="stat-label">Total Users</div>
+                </div>
+
+                <div class="stat-card" style="--stat-color:linear-gradient(90deg,#f59e0b,#fbbf24);--stat-icon-bg:rgba(245,158,11,0.15);--stat-icon-color:#f59e0b;">
+                    <div class="stat-icon"><i class="fa-solid fa-user-shield"></i></div>
+                    <div class="stat-value" th:text="${stats.adminCount}">0</div>
+                    <div class="stat-label">Administrators</div>
+                </div>
+
+                <div class="stat-card" style="--stat-color:linear-gradient(90deg,#10b981,#34d399);--stat-icon-bg:rgba(16,185,129,0.15);--stat-icon-color:#10b981;">
+                    <div class="stat-icon"><i class="fa-solid fa-headphones"></i></div>
+                    <div class="stat-value" th:text="${stats.listenerCount}">0</div>
+                    <div class="stat-label">Listeners</div>
+                </div>
+
+                <div class="stat-card" style="--stat-color:linear-gradient(90deg,#7c3aed,#a855f7);--stat-icon-bg:rgba(124,58,237,0.15);--stat-icon-color:#a855f7;">
+                    <div class="stat-icon"><i class="fa-solid fa-record-vinyl"></i></div>
+                    <div class="stat-value" th:text="${stats.albumCount}">0</div>
+                    <div class="stat-label">Albums</div>
+                </div>
+
+                <div class="stat-card" style="--stat-color:linear-gradient(90deg,#06b6d4,#0ea5e9);--stat-icon-bg:rgba(6,182,212,0.15);--stat-icon-color:#06b6d4;">
+                    <div class="stat-icon"><i class="fa-solid fa-microphone-lines"></i></div>
+                    <div class="stat-value" th:text="${stats.artistCount}">0</div>
+                    <div class="stat-label">Artists</div>
+                </div>
+
+                <div class="stat-card" style="--stat-color:linear-gradient(90deg,#f59e0b,#fbbf24);--stat-icon-bg:rgba(245,158,11,0.15);--stat-icon-color:#f59e0b;">
+                    <div class="stat-icon"><i class="fa-solid fa-bag-shopping"></i></div>
+                    <div class="stat-value" th:text="${stats.orderCount}">0</div>
+                    <div class="stat-label">Orders</div>
+                </div>
+
+                <div class="stat-card" style="--stat-color:linear-gradient(90deg,#ef4444,#f97316);--stat-icon-bg:rgba(239,68,68,0.15);--stat-icon-color:#ef4444;">
+                    <div class="stat-icon"><i class="fa-solid fa-dollar-sign"></i></div>
+                    <div class="stat-value" th:text="'$' + ${#numbers.formatDecimal(stats.totalRevenue, 1, 2)}">$0.00</div>
+                    <div class="stat-label">Total Revenue</div>
+                </div>
+            </div>
+
+            <!-- ══ CATALOG ADMIN STATS ══════════════════════════════ -->
+            <div th:if="${dashboardType == 'catalog'}" class="stats-grid">
+
+                <div class="stat-card" style="--stat-color:linear-gradient(90deg,#7c3aed,#a855f7);--stat-icon-bg:rgba(124,58,237,0.15);--stat-icon-color:#a855f7;">
+                    <div class="stat-icon"><i class="fa-solid fa-record-vinyl"></i></div>
+                    <div class="stat-value" th:text="${stats.albumCount}">0</div>
+                    <div class="stat-label">Total Albums</div>
+                </div>
+
+                <div class="stat-card" style="--stat-color:linear-gradient(90deg,#06b6d4,#0ea5e9);--stat-icon-bg:rgba(6,182,212,0.15);--stat-icon-color:#06b6d4;">
+                    <div class="stat-icon"><i class="fa-solid fa-microphone-lines"></i></div>
+                    <div class="stat-value" th:text="${stats.artistCount}">0</div>
+                    <div class="stat-label">Total Artists</div>
+                </div>
+
+                <div class="stat-card" style="--stat-color:linear-gradient(90deg,#10b981,#34d399);--stat-icon-bg:rgba(16,185,129,0.15);--stat-icon-color:#10b981;">
+                    <div class="stat-icon"><i class="fa-solid fa-tags"></i></div>
+                    <div class="stat-value" th:text="${stats.genreCount}">0</div>
+                    <div class="stat-label">Total Genres</div>
+                </div>
+
+                <div class="stat-card" style="--stat-color:linear-gradient(90deg,#f59e0b,#fbbf24);--stat-icon-bg:rgba(245,158,11,0.15);--stat-icon-color:#f59e0b;">
+                    <div class="stat-icon"><i class="fa-solid fa-layer-group"></i></div>
+                    <div class="stat-value" th:text="${stats.catalogCount}">0</div>
+                    <div class="stat-label">Catalog Bundles</div>
+                </div>
+            </div>
+
+            <!-- ══ ORDER ADMIN STATS ════════════════════════════════ -->
+            <div th:if="${dashboardType == 'order'}" class="stats-grid">
+
+                <div class="stat-card" style="--stat-color:linear-gradient(90deg,#7c3aed,#a855f7);--stat-icon-bg:rgba(124,58,237,0.15);--stat-icon-color:#a855f7;">
+                    <div class="stat-icon"><i class="fa-solid fa-bag-shopping"></i></div>
+                    <div class="stat-value" th:text="${stats.totalOrders}">0</div>
+                    <div class="stat-label">Total Orders</div>
+                </div>
+
+                <div class="stat-card" style="--stat-color:linear-gradient(90deg,#f59e0b,#fbbf24);--stat-icon-bg:rgba(245,158,11,0.15);--stat-icon-color:#f59e0b;">
+                    <div class="stat-icon"><i class="fa-solid fa-clock"></i></div>
+                    <div class="stat-value" th:text="${stats.pendingOrders}">0</div>
+                    <div class="stat-label">Pending Orders</div>
+                </div>
+
+                <div class="stat-card" style="--stat-color:linear-gradient(90deg,#10b981,#34d399);--stat-icon-bg:rgba(16,185,129,0.15);--stat-icon-color:#10b981;">
+                    <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
+                    <div class="stat-value" th:text="${stats.completedOrders}">0</div>
+                    <div class="stat-label">Completed Orders</div>
+                </div>
+
+                <div class="stat-card" style="--stat-color:linear-gradient(90deg,#ef4444,#f97316);--stat-icon-bg:rgba(239,68,68,0.15);--stat-icon-color:#ef4444;">
+                    <div class="stat-icon"><i class="fa-solid fa-dollar-sign"></i></div>
+                    <div class="stat-value" th:text="'$' + ${#numbers.formatDecimal(stats.totalRevenue, 1, 2)}">$0.00</div>
+                    <div class="stat-label">Total Revenue</div>
+                </div>
+
+                <div class="stat-card" style="--stat-color:linear-gradient(90deg,#06b6d4,#0ea5e9);--stat-icon-bg:rgba(6,182,212,0.15);--stat-icon-color:#06b6d4;">
+                    <div class="stat-icon"><i class="fa-solid fa-credit-card"></i></div>
+                    <div class="stat-value" th:text="${stats.paymentCount}">0</div>
+                    <div class="stat-label">Payments</div>
+                </div>
+            </div>
+
+            <!-- ══ SUPPORT ADMIN STATS ══════════════════════════════ -->
+            <div th:if="${dashboardType == 'support'}" class="stats-grid">
+
+                <div class="stat-card" style="--stat-color:linear-gradient(90deg,#f59e0b,#fbbf24);--stat-icon-bg:rgba(245,158,11,0.15);--stat-icon-color:#f59e0b;">
+                    <div class="stat-icon"><i class="fa-solid fa-star"></i></div>
+                    <div class="stat-value" th:text="${stats.reviewCount}">0</div>
+                    <div class="stat-label">Total Reviews</div>
+                </div>
+
+                <div class="stat-card" style="--stat-color:linear-gradient(90deg,#ef4444,#f97316);--stat-icon-bg:rgba(239,68,68,0.15);--stat-icon-color:#ef4444;">
+                    <div class="stat-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                    <div class="stat-value" th:text="${stats.complaintCount}">0</div>
+                    <div class="stat-label">Total Complaints</div>
+                </div>
+
+                <div class="stat-card" style="--stat-color:linear-gradient(90deg,#7c3aed,#a855f7);--stat-icon-bg:rgba(124,58,237,0.15);--stat-icon-color:#a855f7;">
+                    <div class="stat-icon"><i class="fa-solid fa-circle-exclamation"></i></div>
+                    <div class="stat-value" th:text="${stats.pendingComplaints}">0</div>
+                    <div class="stat-label">Open Complaints</div>
+                </div>
+
+                <div class="stat-card" style="--stat-color:linear-gradient(90deg,#10b981,#34d399);--stat-icon-bg:rgba(16,185,129,0.15);--stat-icon-color:#10b981;">
+                    <div class="stat-icon"><i class="fa-solid fa-percent"></i></div>
+                    <div class="stat-value" th:text="${stats.activePromotions}">0</div>
+                    <div class="stat-label">Active Promotions</div>
+                </div>
+
+                <div class="stat-card" style="--stat-color:linear-gradient(90deg,#06b6d4,#0ea5e9);--stat-icon-bg:rgba(6,182,212,0.15);--stat-icon-color:#06b6d4;">
+                    <div class="stat-icon"><i class="fa-solid fa-circle-question"></i></div>
+                    <div class="stat-value" th:text="${stats.faqCount}">0</div>
+                    <div class="stat-label">FAQ Entries</div>
+                </div>
+            </div>
+
+            <!-- Quick Links per role -->
+            <div class="info-section" style="margin-top:1.5rem;">
+                <h3><i class="fa-solid fa-bolt"></i> Quick Actions</h3>
+                <div style="display:flex;flex-wrap:wrap;gap:0.75rem;margin-top:0.75rem;">
+
+                    <!-- Listeners (All Admin Roles) -->
+                    <a th:href="@{/admin/listeners}" class="btn-secondary">
+                        <i class="fa-solid fa-headphones"></i> Manage Listeners
+                    </a>
+
+                    <!-- Catalog role actions -->
+                    <a th:if="${adminRole == 'SuperAdmin' || adminRole == 'StoreManager' || adminRole == 'CatalogCoordinator'}"
+                       th:href="@{/admin/albums}" class="btn-primary">
+                        <i class="fa-solid fa-record-vinyl"></i> Manage Albums
+                    </a>
+                    <a th:if="${adminRole == 'SuperAdmin' || adminRole == 'StoreManager' || adminRole == 'CatalogCoordinator'}"
+                       th:href="@{/admin/artists}" class="btn-secondary">
+                        <i class="fa-solid fa-microphone-lines"></i> Manage Artists
+                    </a>
+                    <a th:if="${adminRole == 'SuperAdmin' || adminRole == 'StoreManager' || adminRole == 'CatalogCoordinator'}"
+                       th:href="@{/admin/genres}" class="btn-secondary">
+                        <i class="fa-solid fa-tags"></i> Manage Genres
+                    </a>
+                    <a th:if="${adminRole == 'SuperAdmin' || adminRole == 'StoreManager' || adminRole == 'CatalogCoordinator'}"
+                       th:href="@{/admin/catalogs}" class="btn-secondary">
+                        <i class="fa-solid fa-layer-group"></i> Manage Catalogs
+                    </a>
+
+                    <!-- Order role actions -->
+                    <a th:if="${adminRole == 'SuperAdmin' || adminRole == 'SalesManager'}"
+                       th:href="@{/admin/orders}" class="btn-primary">
+                        <i class="fa-solid fa-bag-shopping"></i> Manage Orders
+                    </a>
+                    <a th:if="${adminRole == 'SuperAdmin' || adminRole == 'SalesManager'}"
+                       th:href="@{/admin/payments}" class="btn-secondary">
+                        <i class="fa-solid fa-credit-card"></i> Manage Payments
+                    </a>
+
+                    <!-- Digital Content actions -->
+                    <a th:if="${adminRole == 'SuperAdmin' || adminRole == 'StoreManager' || adminRole == 'SalesManager'}"
+                       th:href="@{/admin/library}" class="btn-secondary">
+                        <i class="fa-solid fa-folder-open"></i> Digital Library
+                    </a>
+                    <a th:if="${adminRole == 'SuperAdmin' || adminRole == 'StoreManager' || adminRole == 'SalesManager'}"
+                       th:href="@{/admin/downloads}" class="btn-secondary">
+                        <i class="fa-solid fa-download"></i> Downloads
+                    </a>
+
+                    <!-- Support role actions -->
+                    <a th:if="${adminRole == 'SuperAdmin' || adminRole == 'CustomerSupport'}"
+                       th:href="@{/admin/promotions}" class="btn-secondary">
+                        <i class="fa-solid fa-percent"></i> Manage Promotions
+                    </a>
+                    <a th:if="${adminRole == 'SuperAdmin' || adminRole == 'CustomerSupport'}"
+                       th:href="@{/admin/faqs}" class="btn-secondary">
+                        <i class="fa-solid fa-circle-question"></i> Manage FAQs
+                    </a>
+                    <a th:if="${adminRole == 'SuperAdmin' || adminRole == 'CustomerSupport'}"
+                       th:href="@{/admin/complaints}" class="btn-primary">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Manage Complaints
+                    </a>
+                    <a th:if="${adminRole == 'SuperAdmin' || adminRole == 'CustomerSupport'}"
+                       th:href="@{/admin/reviews}" class="btn-secondary">
+                        <i class="fa-solid fa-star"></i> Manage Reviews
+                    </a>
+
+                    <!-- Super admin system management -->
+                    <a th:if="${adminRole == 'SuperAdmin'}"
+                       th:href="@{/admin/users}" class="btn-secondary">
+                        <i class="fa-solid fa-users"></i> Users
+                    </a>
+                    <a th:if="${adminRole == 'SuperAdmin'}"
+                       th:href="@{/admin/administrators}" class="btn-secondary">
+                        <i class="fa-solid fa-user-shield"></i> Admins
+                    </a>
+                </div>
+            </div>
+
+        </main>
+
+        <footer class="admin-footer">
+            &copy; 2026 MelodyMart Web-Based Music Store &mdash; All rights reserved.
+        </footer>
+    </div>
+</div>
+</body>
+</html>

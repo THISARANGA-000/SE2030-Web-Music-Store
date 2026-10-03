@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MelodyMart | Search Music</title>
+    <meta name="description" content="Search albums, artists, genres, and catalog bundles on MelodyMart.">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        .search-hero {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .search-big-input {
+            max-width: 650px;
+            margin: 1.5rem auto 0;
+            display: flex;
+            gap: 0.75rem;
+        }
+        .type-badge-album {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .type-badge-catalog {
+            background: rgba(168, 85, 247, 0.15);
+            color: #c084fc;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<div th:replace="~{fragments/listener-nav :: navbar(activeItem='search')}"></div>
+
+<main class="container">
+
+    <div class="search-hero">
+        <h1 class="page-title"><i class="fa-solid fa-magnifying-glass" style="font-size:0.8em;"></i> Music Search</h1>
+        <p class="page-subtitle">Search across all albums, artists, genres, and complete catalog bundles.</p>
+        <form th:action="@{/search}" method="get" class="search-big-input">
+            <input type="text" name="q" th:value="${query}" class="form-control" placeholder="Search by album title, artist, genre, or catalog bundle..." autofocus style="padding:0.85rem 1.25rem; font-size:1rem;">
+            <button type="submit" class="btn-primary" style="padding:0.85rem 1.75rem;">
+                <i class="fa-solid fa-magnifying-glass"></i> Search
+            </button>
+        </form>
+    </div>
+
+    <!-- Search Results Header -->
+    <div th:if="${query != null and !query.isEmpty()}" style="margin-bottom:1.5rem;">
+        <p class="results-count">
+            Found <strong th:text="${totalCount}">0</strong> match(es) for "<strong th:text="${query}">query</strong>"
+        </p>
+    </div>
+
+    <!-- Empty State -->
+    <div th:if="${query != null and !query.isEmpty() and totalCount == 0}" class="empty-state">
+        <i class="fa-solid fa-face-frown"></i>
+        <h3>No Results Found</h3>
+        <p>We couldn't find any albums or catalogs matching your search query.</p>
+        <a th:href="@{/albums}" class="btn-primary" style="margin-top:1rem;">Browse All Albums</a>
+    </div>
+
+    <!-- 1. ALBUM RESULTS -->
+    <div th:if="${albums != null and !albums.isEmpty()}" style="margin-bottom:2.5rem;">
+        <h2 style="font-family:'Outfit',sans-serif; font-size:1.35rem; font-weight:700; color:var(--text-primary); margin-bottom:1rem; display:flex; align-items:center; gap:0.6rem;">
+            <span class="type-badge-album">[ALBUM]</span> Matching Albums (<span th:text="${albums.size()}">0</span>)
+        </h2>
+        <div class="albums-grid">
+            <article th:each="album : ${albums}" class="album-card">
+                <div class="cover-wrapper">
+                    <span class="type-badge-album" style="position:absolute; top:0.75rem; left:0.75rem; z-index:2;">[ALBUM]</span>
+                    <span class="genre-badge" th:text="${album.genre.genreName}">Genre</span>
+                    <img th:src="${album.coverImageUrl != null and !album.coverImageUrl.isEmpty()}
+                                    ? @{${album.coverImageUrl}}
+                                    : 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&auto=format&fit=crop&q=60'"
+                         th:alt="${album.albumTitle}"
+                         class="cover-img"
+                         onerror="this.src='https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&auto=format&fit=crop&q=60'">
+                </div>
+                <div class="album-details">
+                    <a th:href="@{/albums/{id}(id=${album.albumId})}" class="album-title" th:text="${album.albumTitle}">Album Title</a>
+                    <p class="artist-name">
+                        <i class="fa-solid fa-microphone-lines"></i>
+                        <span th:text="${album.artist.artistName}">Artist</span>
+                    </p>
+                    <div class="card-footer">
+                        <span class="album-price" th:text="'$' + ${#numbers.formatDecimal(album.price, 1, 2)}">$9.99</span>
+                        <div style="display:flex; gap:0.4rem; align-items:center;">
+                            <form th:action="@{/cart/add}" method="post" style="display:inline;">
+                                <input type="hidden" name="albumId" th:value="${album.albumId}">
+                                <button type="submit" class="btn-view" title="Add to cart" style="cursor:pointer;">
+                                    <i class="fa-solid fa-cart-plus"></i>
+                                </button>
+                            </form>
+                            <a th:href="@{/albums/{id}(id=${album.albumId})}" class="btn-view" title="View details">
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </div>
+
+    <!-- 2. CATALOG RESULTS -->
+    <div th:if="${catalogs != null and !catalogs.isEmpty()}">
+        <h2 style="font-family:'Outfit',sans-serif; font-size:1.35rem; font-weight:700; color:var(--text-primary); margin-bottom:1rem; display:flex; align-items:center; gap:0.6rem;">
+            <span class="type-badge-catalog">[CATALOG]</span> Matching Bundles &amp; Box Sets (<span th:text="${catalogs.size()}">0</span>)
+        </h2>
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:1.5rem;">
+            <div th:each="cat : ${catalogs}" class="admin-card" style="display:flex; flex-direction:column; justify-content:space-between;">
+                <div>
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.75rem;">
+                        <span class="type-badge-catalog">[CATALOG]</span>
+                        <span style="font-size:1.25rem; font-weight:800; color:var(--brand-gold);"
+                              th:text="'$' + ${#numbers.formatDecimal(cat.price, 1, 2)}">$24.99</span>
+                    </div>
+                    <h3 style="font-family:'Outfit',sans-serif; font-size:1.2rem; font-weight:700; color:var(--text-primary); margin-bottom:0.5rem;"
+                        th:text="${cat.catalogName}">Catalog Name</h3>
+                    <p style="font-size:0.85rem; color:var(--text-secondary); line-height:1.5; margin-bottom:1rem;"
+                       th:text="${cat.description}">Catalog description</p>
+                </div>
+                <div style="display:flex; gap:0.75rem; border-top:1px solid var(--border-color); padding-top:1rem;">
+                    <a th:href="@{/catalogs/{id}(id=${cat.catalogId})}" class="btn-secondary btn-sm" style="flex:1; justify-content:center;">
+                        <i class="fa-solid fa-eye"></i> View Bundle
+                    </a>
+                    <form th:action="@{/cart/add-catalog}" method="post" style="flex:1;">
+                        <input type="hidden" name="catalogId" th:value="${cat.catalogId}">
+                        <button type="submit" class="btn-primary btn-sm btn-full" style="justify-content:center;">
+                            <i class="fa-solid fa-cart-plus"></i> Add to Cart
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<footer class="footer">
+    <p>&copy; 2026 MelodyMart Web-Based Music Store &mdash; All rights reserved.</p>
+</footer>
+
+</body>
+</html>
