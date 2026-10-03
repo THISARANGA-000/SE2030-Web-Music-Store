@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'MelodyMart | ' + ${playlist.playlistName}">MelodyMart | Playlist</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+<div th:replace="~{fragments/listener-nav :: navbar(activeItem='playlists')}"></div>
+
+<main class="container">
+
+    <a th:href="@{/playlists}" class="back-link" id="backToPlaylists">
+        <i class="fa-solid fa-arrow-left"></i> Back to My Playlists
+    </a>
+
+    <!-- Alerts -->
+    <div th:if="${successMsg}" class="alert alert-success" style="margin-bottom:1rem;">
+        <i class="fa-solid fa-circle-check"></i> <span th:text="${successMsg}"></span>
+    </div>
+    <div th:if="${errorMsg}" class="alert alert-error" style="margin-bottom:1rem;">
+        <i class="fa-solid fa-circle-exclamation"></i> <span th:text="${errorMsg}"></span>
+    </div>
+
+    <!-- Playlist header -->
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
+        <div>
+            <h1 class="page-title" th:text="${playlist.playlistName}">Playlist Name</h1>
+            <p style="color:var(--text-muted); font-size:0.875rem;">
+                Created <span th:text="${playlist.createdDate != null ? playlist.createdDate.toLocalDate() : ''}"></span>
+                &nbsp;&mdash;&nbsp;
+                Last updated <span th:text="${playlist.lastUpdatedDate != null ? playlist.lastUpdatedDate.toLocalDate() : ''}"></span>
+                &nbsp;&mdash;&nbsp;
+                <strong th:text="${#lists.size(items)} + ' items'"></strong>
+            </p>
+        </div>
+        <div style="display:flex; gap:0.5rem;">
+            <a th:href="@{'/playlists/' + ${playlist.playlistId} + '/edit'}" class="btn-secondary" id="renamePlaylistBtn">
+                <i class="fa-solid fa-pen"></i> Rename
+            </a>
+            <form th:action="@{'/playlists/' + ${playlist.playlistId} + '/delete'}" method="post"
+                  onsubmit="return confirm('Delete this playlist? All items will be removed.');">
+                <button type="submit" class="btn-reset"
+                        style="padding:0.55rem 0.9rem; background:var(--bg-subtle); color:var(--error); border:1px solid var(--border-color); border-radius:var(--radius-sm); cursor:pointer; font-size:0.875rem;">
+                    <i class="fa-solid fa-trash"></i> Delete
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Items section (Album and Track) -->
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1rem; margin-bottom:1.5rem;" class="add-items-grid">
+        <!-- Add Album -->
+        <div class="card" style="padding:1.25rem;">
+            <h3 style="font-size:0.95rem; font-weight:700; margin-bottom:0.75rem; color:var(--text-primary);">
+                <i class="fa-solid fa-compact-disc" style="color:var(--brand-primary);"></i> Add Album to Playlist
+            </h3>
+            <form th:action="@{'/playlists/' + ${playlist.playlistId} + '/add-album'}" method="post"
+                  id="addAlbumForm"
+                  style="display:flex; gap:0.5rem; align-items:center;">
+                <select name="albumId" id="albumSelectField" class="form-control" style="flex:1; min-width:0;" required>
+                    <option value="" disabled selected th:if="${!#lists.isEmpty(allAlbums)}">-- Select a Purchased Album --</option>
+                    <option value="" disabled selected th:if="${#lists.isEmpty(allAlbums)}">-- No purchased albums in library --</option>
+                    <option th:each="alb : ${allAlbums}"
+                            th:value="${alb.albumId}"
+                            th:text="${alb.albumTitle + ' – ' + alb.artist.artistName}">Album</option>
+                </select>
+                <button type="submit" class="btn-primary" id="addAlbumBtn" th:disabled="${#lists.isEmpty(allAlbums)}" style="white-space:nowrap; padding:0.5rem 0.9rem; font-size:0.85rem;">
+                    <i class="fa-solid fa-plus"></i> Add
+                </button>
+            </form>
+        </div>
+
+        <!-- Add Track -->
+        <div class="card" style="padding:1.25rem;">
+            <h3 style="font-size:0.95rem; font-weight:700; margin-bottom:0.75rem; color:var(--text-primary);">
+                <i class="fa-solid fa-music" style="color:var(--brand-primary);"></i> Add Track to Playlist
+            </h3>
+            <form th:action="@{'/playlists/' + ${playlist.playlistId} + '/add-track'}" method="post"
+                  id="addTrackForm"
+                  style="display:flex; gap:0.5rem; align-items:center;">
+                <select name="trackId" id="trackSelectField" class="form-control" style="flex:1; min-width:0;" required>
+                    <option value="" disabled selected th:if="${!#lists.isEmpty(allTracks)}">-- Select a Purchased Track --</option>
+                    <option value="" disabled selected th:if="${#lists.isEmpty(allTracks)}">-- No purchased tracks in library --</option>
+                    <option th:each="trk : ${allTracks}"
+                            th:value="${trk.trackId}"
+                            th:text="${trk.trackTitle + ' (' + trk.album.albumTitle + ')'}">Track</option>
+                </select>
+                <button type="submit" class="btn-primary" id="addTrackBtn" th:disabled="${#lists.isEmpty(allTracks)}" style="white-space:nowrap; padding:0.5rem 0.9rem; font-size:0.85rem;">
+                    <i class="fa-solid fa-plus"></i> Add
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Playlist items -->
+    <div style="margin-bottom:2rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:0.75rem; margin-bottom:1rem;">
+            <h2 style="font-size:1.2rem; font-weight:700; color:var(--text-primary);">
+                <i class="fa-solid fa-list-music" style="color:var(--brand-primary); font-size:0.9em;"></i> Playlist Contents
+            </h2>
+        </div>
+
+        <!-- Empty -->
+        <div th:if="${#lists.isEmpty(items)}"
+             style="text-align:center; padding:3rem; background:var(--bg-subtle); border-radius:var(--radius-md); color:var(--text-muted);">
+            <i class="fa-solid fa-music" style="font-size:2rem; margin-bottom:0.75rem;"></i>
+            <p>No items yet. Add an album or track to get started.</p>
+        </div>
+
+        <!-- Items -->
+        <div th:unless="${#lists.isEmpty(items)}">
+            <div th:each="item : ${items}" class="card"
+                 style="padding:0.9rem 1.25rem; margin-bottom:0.6rem; display:flex; align-items:center; gap:1rem;">
+
+                <!-- Album item -->
+                <th:block th:if="${item.albumItem}">
+                    <div style="width:44px; height:44px; flex-shrink:0; border-radius:var(--radius-sm); overflow:hidden; background:var(--bg-subtle);">
+                        <img th:src="${item.album.coverImageUrl != null and !item.album.coverImageUrl.isEmpty()}
+                                    ? @{${item.album.coverImageUrl}}
+                                    : 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=100&auto=format&fit=crop&q=60'"
+                             onerror="this.src='https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=100&auto=format&fit=crop&q=60'"
+                             style="width:100%; height:100%; object-fit:cover;"
+                             th:alt="${item.album.albumTitle}">
+                    </div>
+                    <div style="flex:1; min-width:0;">
+                        <div style="font-weight:600; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"
+                             th:text="${item.album.albumTitle}">Album</div>
+                        <div style="font-size:0.82rem; color:var(--text-secondary);"
+                             th:text="${item.album.artist.artistName + ' · ' + item.album.genre.genreName}">Artist</div>
+                    </div>
+                    <span class="chip chip-blue" style="font-size:0.75rem;">Album</span>
+                </th:block>
+
+                <!-- Track item -->
+                <th:block th:if="${item.trackItem}">
+                    <div style="width:44px; height:44px; flex-shrink:0; border-radius:var(--radius-sm); overflow:hidden; background:var(--bg-subtle); display:flex; align-items:center; justify-content:center;">
+                        <i class="fa-solid fa-music" style="color:var(--brand-primary);"></i>
+                    </div>
+                    <div style="flex:1; min-width:0;">
+                        <div style="font-weight:600; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"
+                             th:text="${item.track.trackTitle}">Track</div>
+                        <div style="font-size:0.82rem; color:var(--text-secondary);"
+                             th:text="${item.track.album.albumTitle + ' · ' + item.track.formattedDuration}">Album</div>
+                    </div>
+                    <div class="playlist-track-player" style="flex-shrink:0;">
+                        <div th:if="${item.track.audioFileUrl != null and !#strings.isEmpty(item.track.audioFileUrl)}">
+                            <audio controls preload="none" style="height:32px; max-width:220px; outline:none;">
+                                <source th:src="@{${item.track.audioFileUrl}}" type="audio/mpeg">
+                                Your browser does not support the audio element.
+                            </audio>
+                        </div>
+                        <div th:unless="${item.track.audioFileUrl != null and !#strings.isEmpty(item.track.audioFileUrl)}">
+                            <span style="font-size:0.75rem; color:var(--text-muted); font-style:italic;">
+                                Audio preview unavailable
+                            </span>
+                        </div>
+                    </div>
+                    <span class="chip chip-gray" style="font-size:0.75rem;">Track</span>
+                </th:block>
+
+                <!-- Remove button -->
+                <form th:action="@{'/playlists/' + ${playlist.playlistId} + '/items/' + ${item.playlistItemId} + '/delete'}" method="post" style="flex-shrink:0;">
+                    <button type="submit" title="Remove from playlist"
+                            style="background:none; border:none; color:var(--error); cursor:pointer; font-size:1rem; padding:0.25rem 0.4rem;"
+                            onclick="return confirm('Remove this item from the playlist?');">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<footer class="footer"><p>&copy; 2026 MelodyMart Digital Music Store &mdash; All rights reserved.</p></footer>
+</body>
+</html>

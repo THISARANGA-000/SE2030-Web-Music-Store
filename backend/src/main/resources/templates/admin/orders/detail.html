@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Detail | MelodyMart Admin</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+<div class="admin-layout">
+    <div th:replace="~{admin/fragments/sidebar :: sidebar(activeItem='orders')}"></div>
+    <div class="admin-content">
+        <div class="admin-topbar">
+            <nav class="admin-breadcrumb">
+                <a th:href="@{/admin/dashboard}">Dashboard</a>
+                <span class="admin-breadcrumb-sep">/</span>
+                <a th:href="@{/admin/orders}">Orders</a>
+                <span class="admin-breadcrumb-sep">/</span>
+                <span class="admin-breadcrumb-current">Detail</span>
+            </nav>
+        </div>
+        <main class="admin-main">
+            <div class="admin-page-header">
+                <div>
+                    <h1 class="admin-page-title" th:text="${order != null ? 'Order #' + order[0] : 'Order Detail'}">Order Detail</h1>
+                    <p class="admin-page-subtitle" th:text="${order != null ? order[1] + ' — ' + order[2] : ''}">Customer</p>
+                </div>
+                <div style="display:flex; gap:0.5rem; align-items:center;">
+                    <!-- Pending Actions -->
+                    <form th:if="${order != null and order[4] == 'Pending'}"
+                          th:action="@{/admin/orders/{id}/accept(id=${order[0]})}"
+                          method="post" style="display:inline;"
+                          onsubmit="return confirm('Are you sure you want to accept this order and grant digital library access?');">
+                        <button type="submit" class="btn-primary" style="background:linear-gradient(135deg,#10b981,#059669); border:none; padding:0.6rem 1.2rem; cursor:pointer;">
+                            <i class="fa-solid fa-check"></i> Accept Order
+                        </button>
+                    </form>
+                    <form th:if="${order != null and order[4] == 'Pending'}"
+                          th:action="@{/admin/orders/{id}/decline(id=${order[0]})}"
+                          method="post" style="display:inline;"
+                          onsubmit="return confirm('Are you sure you want to decline this order?');">
+                        <button type="submit" class="btn-danger" style="background:linear-gradient(135deg,#ef4444,#dc2626); border:none; border-radius:var(--radius-sm, 6px); padding:0.6rem 1.2rem; color:#fff; cursor:pointer; font-weight:600;">
+                            <i class="fa-solid fa-xmark"></i> Decline Order
+                        </button>
+                    </form>
+                    <!-- Status Indicators when already finalized -->
+                    <span th:if="${order != null and order[4] == 'Completed'}" class="chip chip-green" style="padding:0.5rem 1rem; font-size:0.85rem;">
+                        <i class="fa-solid fa-circle-check"></i> Accepted
+                    </span>
+                    <span th:if="${order != null and order[4] == 'Cancelled'}" class="chip chip-red" style="padding:0.5rem 1rem; font-size:0.85rem;">
+                        <i class="fa-solid fa-circle-xmark"></i> Declined
+                    </span>
+                    <!-- Delete Order Form -->
+                    <form th:if="${order != null}"
+                          th:action="@{/admin/orders/{id}/delete(id=${order[0]})}"
+                          method="post" style="display:inline;"
+                          onsubmit="return confirm('Are you sure you want to permanently delete this order?');">
+                        <button type="submit" class="btn-danger" style="background:linear-gradient(135deg,#ef4444,#dc2626); border:none; border-radius:var(--radius-sm, 6px); padding:0.6rem 1.2rem; color:#fff; cursor:pointer; font-weight:600;">
+                            <i class="fa-solid fa-trash"></i> Delete Order
+                        </button>
+                    </form>
+                    <a th:href="@{/admin/orders}" class="btn-secondary"><i class="fa-solid fa-arrow-left"></i> Back</a>
+                </div>
+            </div>
+
+            <div th:if="${successMsg}" class="alert alert-success" style="margin-bottom:1.5rem;"><i class="fa-solid fa-circle-check"></i> <span th:text="${successMsg}"></span></div>
+            <div th:if="${errorMsg}"   class="alert alert-error" style="margin-bottom:1.5rem;"><i class="fa-solid fa-circle-xmark"></i> <span th:text="${errorMsg}"></span></div>
+
+            <div th:if="${order == null}" class="alert alert-error">Order not found.</div>
+
+            <div th:if="${order != null}">
+                <!-- Order summary -->
+                <div class="info-section" style="margin-bottom:1.5rem;">
+                    <h3><i class="fa-solid fa-receipt"></i> Order Summary</h3>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;margin-top:0.75rem;">
+                        <div class="profile-field"><div class="profile-field-label">Date</div>
+                            <div class="profile-field-value" th:text="${order[3] != null ? order[3].toString().substring(0,10) : '—'}">—</div></div>
+                        <div class="profile-field"><div class="profile-field-label">Status</div>
+                            <div class="profile-field-value">
+                                <span th:switch="${order[4]}">
+                                    <span th:case="'Completed'" class="chip chip-green"><i class="fa-solid fa-circle-check"></i> Accepted</span>
+                                    <span th:case="'Pending'"   class="chip chip-yellow"><i class="fa-solid fa-clock"></i> Pending</span>
+                                    <span th:case="'Cancelled'" class="chip chip-red"><i class="fa-solid fa-circle-xmark"></i> Declined</span>
+                                    <span th:case="*"           class="chip chip-gray"   th:text="${order[4]}">—</span>
+                                </span>
+                            </div></div>
+                        <div class="profile-field"><div class="profile-field-label">Total</div>
+                            <div class="profile-field-value" style="color:var(--brand-gold);font-weight:700;"
+                                 th:text="'$' + ${#numbers.formatDecimal(order[5],1,2)}">$0.00</div></div>
+                    </div>
+                </div>
+
+                <!-- Order Items -->
+                <div class="admin-table-wrap" style="margin-bottom:1.5rem;">
+                    <div class="admin-table-header">
+                        <span class="admin-table-title"><i class="fa-solid fa-list"></i> Order Items</span>
+                    </div>
+                    <table class="admin-table">
+                        <thead><tr><th>Item #</th><th>Product</th><th>Qty</th><th>Unit Price</th></tr></thead>
+                        <tbody>
+                            <tr th:if="${orderItems.isEmpty()}">
+                                <td colspan="4" style="text-align:center;padding:2rem;color:var(--text-muted);">No items.</td>
+                            </tr>
+                            <tr th:each="item : ${orderItems}">
+                                <td th:text="${item[0]}">—</td>
+                                <td><strong th:text="${item[1]}">—</strong></td>
+                                <td th:text="${item[2]}">1</td>
+                                <td style="color:var(--brand-gold);font-weight:700;"
+                                    th:text="'$' + ${#numbers.formatDecimal(item[3],1,2)}">$0.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Payment -->
+                <div class="info-section" th:if="${payment != null}">
+                    <h3><i class="fa-solid fa-credit-card"></i> Payment</h3>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;margin-top:0.75rem;">
+                        <div class="profile-field"><div class="profile-field-label">Payment ID</div>
+                            <div class="profile-field-value" th:text="${payment[0]}">—</div></div>
+                        <div class="profile-field"><div class="profile-field-label">Date</div>
+                            <div class="profile-field-value" th:text="${payment[1] != null ? payment[1].toString().substring(0,10) : '—'}">—</div></div>
+                        <div class="profile-field"><div class="profile-field-label">Amount</div>
+                            <div class="profile-field-value" style="color:var(--brand-gold);font-weight:700;"
+                                 th:text="'$' + ${#numbers.formatDecimal(payment[2],1,2)}">$0.00</div></div>
+                        <div class="profile-field"><div class="profile-field-label">Method</div>
+                            <div class="profile-field-value" th:text="${payment[3]}">—</div></div>
+                        <div class="profile-field"><div class="profile-field-label">Reference</div>
+                            <div class="profile-field-value" th:text="${payment[4] != null ? payment[4] : '—'}">—</div></div>
+                        <div class="profile-field"><div class="profile-field-label">Status</div>
+                            <div class="profile-field-value">
+                                <span th:switch="${payment[5]}">
+                                    <span th:case="'Completed'" class="chip chip-green"  th:text="${payment[5]}">—</span>
+                                    <span th:case="'Pending'"   class="chip chip-yellow" th:text="${payment[5]}">—</span>
+                                    <span th:case="'Failed'"    class="chip chip-red"    th:text="${payment[5]}">—</span>
+                                    <span th:case="*"           class="chip chip-gray"   th:text="${payment[5]}">—</span>
+                                </span>
+                            </div></div>
+                    </div>
+                </div>
+                <div class="info-section" th:if="${payment == null}">
+                    <p style="color:var(--text-muted);">No payment record found for this order.</p>
+                </div>
+            </div>
+        </main>
+        <footer class="admin-footer">&copy; 2026 MelodyMart &mdash; All rights reserved.</footer>
+    </div>
+</div>
+</body>
+</html>

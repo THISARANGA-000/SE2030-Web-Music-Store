@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listener Detail | MelodyMart Admin</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+<div class="admin-layout">
+    <div th:replace="~{admin/fragments/sidebar :: sidebar(activeItem='listeners')}"></div>
+    <div class="admin-content">
+        <div class="admin-topbar">
+            <nav class="admin-breadcrumb">
+                <a th:href="@{/admin/dashboard}">Dashboard</a>
+                <span class="admin-breadcrumb-sep">/</span>
+                <a th:href="@{/admin/listeners}">Listeners</a>
+                <span class="admin-breadcrumb-sep">/</span>
+                <span class="admin-breadcrumb-current">Detail</span>
+            </nav>
+        </div>
+        <main class="admin-main">
+            <div class="admin-page-header">
+                <div>
+                    <h1 class="admin-page-title" th:text="${listener != null ? listener[1] + ' ' + listener[2] : 'Listener Detail'}">Listener</h1>
+                    <p class="admin-page-subtitle" th:text="${listener != null ? listener[3] : ''}">email</p>
+                </div>
+                <a th:href="@{/admin/listeners}" class="btn-secondary"><i class="fa-solid fa-arrow-left"></i> Back</a>
+            </div>
+
+            <div th:if="${listener == null}" class="alert alert-error">Listener not found.</div>
+
+            <div th:if="${listener != null}">
+                <!-- Listener info card -->
+                <div class="info-section" style="margin-bottom:1.5rem;">
+                    <h3><i class="fa-solid fa-user"></i> Listener Information</h3>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;margin-top:0.75rem;">
+                        <div class="profile-field">
+                            <div class="profile-field-label"><i class="fa-solid fa-hashtag"></i> User ID</div>
+                            <div class="profile-field-value" th:text="${listener[0]}">—</div>
+                        </div>
+                        <div class="profile-field">
+                            <div class="profile-field-label"><i class="fa-solid fa-phone"></i> Phone</div>
+                            <div class="profile-field-value" th:text="${listener[4] != null ? listener[4] : '—'}">—</div>
+                        </div>
+                        <div class="profile-field">
+                            <div class="profile-field-label"><i class="fa-solid fa-calendar"></i> Registered</div>
+                            <div class="profile-field-value" th:text="${listener[5] != null ? listener[5].toString().substring(0,10) : '—'}">—</div>
+                        </div>
+                        <div class="profile-field">
+                            <div class="profile-field-label"><i class="fa-solid fa-circle-dot"></i> Status</div>
+                            <div class="profile-field-value">
+                                <span th:switch="${listener[6]}">
+                                    <span th:case="'Active'"    class="chip chip-green"  th:text="${listener[6]}">Active</span>
+                                    <span th:case="'Suspended'" class="chip chip-red"    th:text="${listener[6]}">Suspended</span>
+                                    <span th:case="*"           class="chip chip-gray"   th:text="${listener[6]}">—</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Orders -->
+                <div class="admin-table-wrap" style="margin-bottom:1.5rem;">
+                    <div class="admin-table-header">
+                        <span class="admin-table-title"><i class="fa-solid fa-bag-shopping"></i> Orders</span>
+                    </div>
+                    <table class="admin-table">
+                        <thead><tr><th>Order ID</th><th>Date</th><th>Status</th><th>Total</th></tr></thead>
+                        <tbody>
+                            <tr th:if="${listenerOrders.isEmpty()}">
+                                <td colspan="4" style="text-align:center;padding:2rem;color:var(--text-muted);">No orders.</td>
+                            </tr>
+                            <tr th:each="o : ${listenerOrders}">
+                                <td th:text="${o[0]}">—</td>
+                                <td th:text="${o[1] != null ? o[1].toString().substring(0,10) : '—'}">—</td>
+                                <td>
+                                    <span th:switch="${o[2]}">
+                                        <span th:case="'Completed'" class="chip chip-green"  th:text="${o[2]}">—</span>
+                                        <span th:case="'Pending'"   class="chip chip-yellow" th:text="${o[2]}">—</span>
+                                        <span th:case="'Cancelled'" class="chip chip-red"    th:text="${o[2]}">—</span>
+                                        <span th:case="*"           class="chip chip-gray"   th:text="${o[2]}">—</span>
+                                    </span>
+                                </td>
+                                <td style="color:var(--brand-gold);font-weight:700;"
+                                    th:text="'$' + ${#numbers.formatDecimal(o[3],1,2)}">—</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Reviews -->
+                <div class="admin-table-wrap">
+                    <div class="admin-table-header">
+                        <span class="admin-table-title"><i class="fa-solid fa-star"></i> Reviews</span>
+                    </div>
+                    <table class="admin-table">
+                        <thead><tr><th>ID</th><th>Album</th><th>Rating</th><th>Comment</th><th>Date</th></tr></thead>
+                        <tbody>
+                            <tr th:if="${listenerReviews.isEmpty()}">
+                                <td colspan="5" style="text-align:center;padding:2rem;color:var(--text-muted);">No reviews.</td>
+                            </tr>
+                            <tr th:each="rv : ${listenerReviews}">
+                                <td th:text="${rv[0]}">—</td>
+                                <td th:text="${rv[1]}">—</td>
+                                <td><span class="star-rating" th:text="${rv[2]}">5</span>★</td>
+                                <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+                                    th:text="${rv[3] != null ? rv[3] : '—'}">—</td>
+                                <td th:text="${rv[4] != null ? rv[4].toString().substring(0,10) : '—'}">—</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+        <footer class="admin-footer">&copy; 2026 MelodyMart &mdash; All rights reserved.</footer>
+    </div>
+</div>
+</body>
+</html>

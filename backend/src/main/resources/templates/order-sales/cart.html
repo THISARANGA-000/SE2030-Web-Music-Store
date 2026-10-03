@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MelodyMart | Shopping Cart</title>
+    <meta name="description" content="Review items in your MelodyMart shopping cart before checkout.">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+<!-- Navigation -->
+<div th:replace="~{fragments/listener-nav :: navbar(activeItem='cart')}"></div>
+
+<main class="container">
+
+    <div class="page-header">
+        <h1 class="page-title"><i class="fa-solid fa-cart-shopping" style="color:var(--brand-primary); font-size:0.9em;"></i> Shopping Cart</h1>
+        <p class="page-subtitle">Review items in your cart and proceed to checkout.</p>
+    </div>
+
+    <!-- Success & Error Alerts -->
+    <div th:if="${successMsg}" class="alert alert-success" id="cartSuccessAlert">
+        <i class="fa-solid fa-circle-check"></i>
+        <span th:text="${successMsg}"></span>
+    </div>
+    <div th:if="${infoMsg}" class="alert alert-info" id="cartInfoAlert">
+        <i class="fa-solid fa-circle-info"></i>
+        <span th:text="${infoMsg}"></span>
+    </div>
+    <div th:if="${errorMsg}" class="alert alert-error" id="cartErrorAlert">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <span th:text="${errorMsg}"></span>
+    </div>
+
+    <!-- Empty State -->
+    <div th:if="${#lists.isEmpty(items)}" class="empty-state" id="emptyCart">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <h3>Your Cart is Empty</h3>
+        <p>Looks like you haven't added any albums or bundles yet.</p>
+        <a th:href="@{/albums}" class="btn-primary" style="margin-top:1.25rem;">
+            <i class="fa-solid fa-compact-disc"></i> Explore Albums
+        </a>
+    </div>
+
+    <!-- Active Cart Items Grid -->
+    <div th:unless="${#lists.isEmpty(items)}" class="cart-layout">
+
+        <!-- Items Table -->
+        <div class="cart-table-card" id="cartItemsList">
+            <div th:each="item : ${items}" class="cart-item-row" th:id="'cart-item-' + ${item.itemNo}">
+
+                <!-- Cover Image -->
+                <img th:src="${item.itemImageUrl != null} ? @{${item.itemImageUrl}} : 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=300&auto=format&fit=crop&q=60'"
+                     th:alt="${item.itemTitle}"
+                     class="cart-thumb"
+                     onerror="this.src='https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=300&auto=format&fit=crop&q=60'">
+
+                <!-- Item Details -->
+                <div class="cart-item-info">
+                    <h4 th:text="${item.itemTitle}">Album Title</h4>
+                    <p th:text="${item.itemSubtitle}">Artist Name</p>
+                    <span style="font-size:0.8rem; color:var(--text-secondary); font-weight:600;"
+                          th:text="'Unit Price: $' + ${#numbers.formatDecimal(item.unitPrice, 1, 2)}">$9.99</span>
+                </div>
+
+                <!-- Quantity Form -->
+                <form th:action="@{/cart/update}" method="post" class="cart-qty-form">
+                    <input type="hidden" name="itemNo" th:value="${item.itemNo}">
+                    <input type="number" name="quantity" min="1" max="99" class="qty-input"
+                           th:value="${item.quantity}">
+                    <button type="submit" class="btn-secondary btn-sm" title="Update Quantity">
+                        <i class="fa-solid fa-rotate"></i>
+                    </button>
+                </form>
+
+                <!-- Subtotal -->
+                <div style="text-align:right;">
+                    <div style="font-size:0.75rem; color:var(--text-muted); font-weight:600; text-transform:uppercase;">Subtotal</div>
+                    <strong style="color:var(--text-primary); font-size:1.05rem;"
+                            th:text="'$' + ${#numbers.formatDecimal(item.subtotal, 1, 2)}">$9.99</strong>
+                </div>
+
+                <!-- Remove Button -->
+                <form th:action="@{/cart/remove}" method="post">
+                    <input type="hidden" name="itemNo" th:value="${item.itemNo}">
+                    <button type="submit" class="btn-icon-danger" title="Remove from cart">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </form>
+
+            </div>
+        </div>
+
+        <!-- Order Summary Card -->
+        <div class="cart-summary-card">
+            <h3 style="font-size:1.15rem; font-weight:700; margin-bottom:1.25rem; color:var(--text-primary);">
+                Order Summary
+            </h3>
+
+            <div class="summary-row">
+                <span>Items Subtotal</span>
+                <span th:text="'$' + ${#numbers.formatDecimal(cartTotal != null ? cartTotal : (totalAmount != null ? totalAmount : 0), 1, 2)}">$0.00</span>
+            </div>
+
+            <div class="summary-row">
+                <span>Format</span>
+                <span style="font-weight:600;">High-Res FLAC / MP3</span>
+            </div>
+
+            <div class="summary-divider"></div>
+
+            <div class="summary-total">
+                <span>Total</span>
+                <span style="font-size:1.4rem; font-weight:800; color:var(--text-primary);"
+                      th:text="'$' + ${#numbers.formatDecimal(cartTotal != null ? cartTotal : (totalAmount != null ? totalAmount : 0), 1, 2)}">$0.00</span>
+            </div>
+
+            <a th:href="@{/checkout}" class="btn-primary btn-full" id="checkoutBtn" style="padding:0.75rem;">
+                Proceed to Checkout <i class="fa-solid fa-arrow-right"></i>
+            </a>
+
+            <div style="margin-top:1.25rem; text-align:center;">
+                <a th:href="@{/albums}" style="font-size:0.85rem; color:var(--brand-primary); font-weight:500;">
+                    <i class="fa-solid fa-arrow-left"></i> Continue Shopping
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+</main>
+
+<footer class="footer">
+    <p>&copy; 2026 MelodyMart Digital Music Store &mdash; All rights reserved.</p>
+</footer>
+
+</body>
+</html>
