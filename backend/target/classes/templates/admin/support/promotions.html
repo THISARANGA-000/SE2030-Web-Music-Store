@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MelodyMart Admin | Promotions</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+<div class="admin-layout">
+    <div th:replace="~{admin/fragments/sidebar :: sidebar(activeItem='promotions')}"></div>
+    <div class="admin-content">
+        <div class="admin-topbar">
+            <nav class="admin-breadcrumb">
+                <a th:href="@{/admin/dashboard}">Dashboard</a>
+                <span class="admin-breadcrumb-sep">/</span>
+                <span class="admin-breadcrumb-current"><i class="fa-solid fa-percent"></i> Promotions</span>
+            </nav>
+            <div class="admin-topbar-right">
+                <a th:href="@{/admin/album-promotions}" class="btn-secondary" style="font-size:0.8rem;padding:0.45rem 0.9rem;">
+                    <i class="fa-solid fa-tags"></i> Album Assignments
+                </a>
+                <a th:href="@{/admin/promotions/add}" class="btn-primary" style="font-size:0.8rem;padding:0.45rem 0.9rem;">
+                    <i class="fa-solid fa-plus"></i> Add Promotion
+                </a>
+            </div>
+        </div>
+
+        <main class="admin-main">
+            <div class="admin-page-header">
+                <div>
+                    <h1 class="admin-page-title"><i class="fa-solid fa-percent" style="color:var(--brand-secondary);"></i> Promotion Management</h1>
+                    <p class="admin-page-subtitle">Create, edit and assign promotions to albums.</p>
+                </div>
+            </div>
+
+            <!-- Flash messages -->
+            <div th:if="${successMsg}" class="alert alert-success" style="margin-bottom:1.5rem;">
+                <i class="fa-solid fa-circle-check"></i> <span th:text="${successMsg}"></span>
+            </div>
+            <div th:if="${errorMsg}" class="alert alert-error" style="margin-bottom:1.5rem;">
+                <i class="fa-solid fa-circle-xmark"></i> <span th:text="${errorMsg}"></span>
+            </div>
+
+            <!-- Stats row -->
+            <div class="stats-grid" style="margin-bottom:1.5rem;">
+                <div class="stat-card" style="--stat-color:linear-gradient(90deg,#10b981,#34d399);--stat-icon-bg:rgba(16,185,129,0.15);--stat-icon-color:#10b981;">
+                    <div class="stat-icon"><i class="fa-solid fa-check-circle"></i></div>
+                    <div class="stat-value" th:text="${activeCount != null ? activeCount : 0}">0</div>
+                    <div class="stat-label">Active</div>
+                </div>
+                <div class="stat-card" style="--stat-color:linear-gradient(90deg,#f59e0b,#fbbf24);--stat-icon-bg:rgba(245,158,11,0.15);--stat-icon-color:#f59e0b;">
+                    <div class="stat-icon"><i class="fa-solid fa-clock"></i></div>
+                    <div class="stat-value" th:text="${scheduledCount != null ? scheduledCount : 0}">0</div>
+                    <div class="stat-label">Scheduled</div>
+                </div>
+                <div class="stat-card" style="--stat-color:linear-gradient(90deg,#6366f1,#818cf8);--stat-icon-bg:rgba(99,102,241,0.15);--stat-icon-color:#6366f1;">
+                    <div class="stat-icon"><i class="fa-solid fa-percent"></i></div>
+                    <div class="stat-value" th:text="${totalCount != null ? totalCount : promotions.size()}">0</div>
+                    <div class="stat-label">Total Promotions</div>
+                </div>
+                <div class="stat-card" style="--stat-color:linear-gradient(90deg,#ef4444,#f87171);--stat-icon-bg:rgba(239,68,68,0.15);--stat-icon-color:#ef4444;">
+                    <div class="stat-icon"><i class="fa-solid fa-ban"></i></div>
+                    <div class="stat-value" th:text="${expiredCount != null ? expiredCount : 0}">0</div>
+                    <div class="stat-label">Expired/Cancelled</div>
+                </div>
+            </div>
+
+            <!-- Promotions Table -->
+            <div class="admin-table-wrap">
+                <div class="admin-table-header">
+                    <span class="admin-table-title"><i class="fa-solid fa-percent"></i> All Promotions</span>
+                    <span style="font-size:0.8rem;color:var(--text-muted);" th:text="${promotions.size()} + ' promotions'">0 promotions</span>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table class="admin-table" id="promotionsTable">
+                        <thead>
+                            <tr>
+                                <th style="width:60px;">ID</th>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Value</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Status</th>
+                                <th style="width:200px;text-align:center;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${promotions.isEmpty()}">
+                                <td colspan="8" style="text-align:center;padding:3rem;color:var(--text-muted);">
+                                    <i class="fa-solid fa-percent" style="font-size:2rem;margin-bottom:0.5rem;display:block;"></i>
+                                    No promotions found. <a th:href="@{/admin/promotions/add}" style="color:var(--brand-secondary);">Create one now.</a>
+                                </td>
+                            </tr>
+                            <tr th:each="p : ${promotions}">
+                                <!-- p[0]=PromotionID, p[1]=Name, p[2]=Description, p[3]=DiscountType, p[4]=DiscountValue, p[5]=StartDate, p[6]=EndDate, p[7]=Status -->
+                                <td style="font-weight:600;color:var(--text-muted);" th:text="'#' + p[0]">#1</td>
+                                <td>
+                                    <div style="font-weight:600;" th:text="${p[1]}">Name</div>
+                                    <div style="font-size:0.75rem;color:var(--text-muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+                                         th:text="${p[2] != null ? p[2] : '—'}">—</div>
+                                </td>
+                                <td>
+                                    <span th:if="${'Percentage'.equals(p[3])}" class="badge badge-info">
+                                        <i class="fa-solid fa-percent"></i> Percentage
+                                    </span>
+                                    <span th:if="${'FixedAmount'.equals(p[3])}" class="badge badge-purple">
+                                        <i class="fa-solid fa-dollar-sign"></i> Fixed Amount
+                                    </span>
+                                </td>
+                                <td style="font-weight:700;color:var(--brand-gold);">
+                                    <span th:if="${'Percentage'.equals(p[3])}" th:text="${p[4]} + '%'">10%</span>
+                                    <span th:if="${'FixedAmount'.equals(p[3])}" th:text="'$' + p[4]">$5</span>
+                                </td>
+                                <td style="font-size:0.85rem;" th:text="${#strings.substring(p[5].toString(), 0, 10)}">2024-01-01</td>
+                                <td style="font-size:0.85rem;" th:text="${#strings.substring(p[6].toString(), 0, 10)}">2024-12-31</td>
+                                <td>
+                                    <span th:if="${'Active'.equals(p[7])}"     class="badge badge-success"><i class="fa-solid fa-circle"></i> Active</span>
+                                    <span th:if="${'Scheduled'.equals(p[7])}"  class="badge badge-warning"><i class="fa-solid fa-clock"></i> Scheduled</span>
+                                    <span th:if="${'Expired'.equals(p[7])}"    class="badge badge-gray"><i class="fa-solid fa-hourglass-end"></i> Expired</span>
+                                    <span th:if="${'Cancelled'.equals(p[7])}"  class="badge badge-error"><i class="fa-solid fa-ban"></i> Cancelled</span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <div style="display:flex;gap:0.3rem;justify-content:center;flex-wrap:wrap;">
+                                        <a th:href="@{/admin/promotions/edit/{id}(id=${p[0]})}"
+                                           class="btn-secondary" style="font-size:0.75rem;padding:0.3rem 0.6rem;" title="Edit">
+                                            <i class="fa-solid fa-pen"></i> Edit
+                                        </a>
+                                        <a th:href="@{/admin/promotions/{id}/albums(id=${p[0]})}"
+                                           class="btn-primary" style="font-size:0.75rem;padding:0.3rem 0.6rem;background:var(--brand-secondary);" title="Manage Albums">
+                                            <i class="fa-solid fa-record-vinyl"></i> Albums
+                                        </a>
+                                        <form th:action="@{/admin/promotions/deactivate/{id}(id=${p[0]})}" method="post" style="display:inline;"
+                                              th:if="${!'Cancelled'.equals(p[7]) && !'Expired'.equals(p[7])}">
+                                            <button type="submit" class="btn-secondary"
+                                                    style="font-size:0.75rem;padding:0.3rem 0.6rem;color:var(--warning);"
+                                                    onclick="return confirm('Deactivate this promotion?')">
+                                                <i class="fa-solid fa-ban"></i>
+                                            </button>
+                                        </form>
+                                        <form th:action="@{/admin/promotions/delete/{id}(id=${p[0]})}" method="post" style="display:inline;">
+                                            <button type="submit" class="btn-secondary"
+                                                    style="font-size:0.75rem;padding:0.3rem 0.6rem;color:var(--error);"
+                                                    onclick="return confirm('Permanently DELETE this promotion? This cannot be undone.')">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,108 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'MelodyMart | Write Review - ' + ${album.albumTitle}">MelodyMart | Write Review</title>
+    <meta name="description" th:content="'Write a review for ' + ${album.albumTitle} + ' on MelodyMart.'">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        .star-rating { display:flex; flex-direction:row-reverse; gap:0.2rem; justify-content:flex-end; }
+        .star-rating input[type="radio"] { display:none; }
+        .star-rating label { font-size:1.8rem; color:#d1d5db; cursor:pointer; transition:color 0.12s ease; line-height:1; }
+        .star-rating input[type="radio"]:checked ~ label,
+        .star-rating label:hover,
+        .star-rating label:hover ~ label { color:#f59e0b; }
+        .review-page-card { background:#ffffff; border:1px solid var(--border-color,#e5e7eb); border-radius:10px; padding:2rem; max-width:640px; margin:0 auto; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+        .album-info-banner { display:flex; align-items:center; gap:1rem; padding:1rem; background:var(--bg-subtle,#f9fafb); border:1px solid var(--border-color,#e5e7eb); border-radius:8px; margin-bottom:1.5rem; }
+        .album-info-banner img { width:64px; height:64px; border-radius:6px; object-fit:cover; flex-shrink:0; }
+        .album-cover-placeholder { width:64px; height:64px; border-radius:6px; background:var(--bg-elevated,#f3f4f6); border:1px solid var(--border-color,#e5e7eb); display:flex; align-items:center; justify-content:center; flex-shrink:0; color:var(--text-muted,#9ca3af); font-size:1.5rem; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/listener-nav :: navbar(activeItem='library')}"></div>
+<main class="container" style="padding-top:1.5rem; padding-bottom:3rem;">
+    <a th:href="@{/my-library}" class="back-link" id="backToLibraryLink"
+       style="display:inline-flex; align-items:center; gap:0.4rem; font-size:0.9rem; color:var(--brand-primary); text-decoration:none; margin-bottom:1.5rem; font-weight:600;">
+        <i class="fa-solid fa-arrow-left"></i> Back to My Library
+    </a>
+    <div th:if="${successMsg}" class="alert alert-success" style="margin-bottom:1rem; max-width:640px; margin-left:auto; margin-right:auto;">
+        <i class="fa-solid fa-circle-check"></i> <span th:text="${successMsg}"></span>
+    </div>
+    <div th:if="${errorMsg}" class="alert alert-error" style="margin-bottom:1rem; max-width:640px; margin-left:auto; margin-right:auto;">
+        <i class="fa-solid fa-circle-exclamation"></i> <span th:text="${errorMsg}"></span>
+    </div>
+    <div class="review-page-card">
+        <h1 style="font-size:1.3rem; font-weight:800; color:var(--text-primary); margin-bottom:0.3rem; display:flex; align-items:center; gap:0.5rem;">
+            <i class="fa-solid fa-pen-nib" style="color:var(--brand-primary); font-size:1.05rem;"></i> Write a Review
+        </h1>
+        <p style="font-size:0.875rem; color:var(--text-secondary); margin-bottom:1.5rem;">
+            Share your thoughts and help other music lovers discover great albums.
+        </p>
+        <div class="album-info-banner">
+            <div th:if="${album.coverImageUrl != null and !#strings.isEmpty(album.coverImageUrl)}">
+                <img th:src="@{${album.coverImageUrl}}" th:alt="${album.albumTitle}"
+                     onerror="this.style.display='none'">
+            </div>
+            <div th:unless="${album.coverImageUrl != null and !#strings.isEmpty(album.coverImageUrl)}"
+                 class="album-cover-placeholder"><i class="fa-solid fa-compact-disc"></i></div>
+            <div>
+                <div style="font-weight:700; font-size:1rem; color:var(--text-primary);" th:text="${album.albumTitle}">Album Title</div>
+                <div style="font-size:0.84rem; color:var(--text-secondary); margin-top:0.2rem;">
+                    <i class="fa-solid fa-user" style="font-size:0.72rem; color:var(--text-muted);"></i>
+                    <span th:text="${album.artist.artistName}">Artist Name</span>
+                    <span th:if="${album.genre != null}" style="color:var(--text-muted);" th:text="' - ' + ${album.genre.genreName}"></span>
+                </div>
+            </div>
+        </div>
+        <form th:action="@{'/albums/' + ${album.albumId} + '/reviews'}" method="post" id="writeReviewForm">
+            <input type="hidden" name="returnUrl" value="/my-library">
+            <div class="form-group" style="margin-bottom:1.25rem;">
+                <label class="form-label" style="font-size:0.9rem; font-weight:600; color:var(--text-primary); display:block; margin-bottom:0.5rem;">
+                    Rating <span style="color:var(--error,#ef4444);">*</span>
+                </label>
+                <div class="star-rating" id="starRatingWidget" role="radiogroup" aria-label="Star Rating">
+                    <input type="radio" id="star5" name="rating" value="5" checked>
+                    <label for="star5" title="5 stars - Outstanding"><i class="fa-solid fa-star"></i></label>
+                    <input type="radio" id="star4" name="rating" value="4">
+                    <label for="star4" title="4 stars - Very Good"><i class="fa-solid fa-star"></i></label>
+                    <input type="radio" id="star3" name="rating" value="3">
+                    <label for="star3" title="3 stars - Average"><i class="fa-solid fa-star"></i></label>
+                    <input type="radio" id="star2" name="rating" value="2">
+                    <label for="star2" title="2 stars - Below Average"><i class="fa-solid fa-star"></i></label>
+                    <input type="radio" id="star1" name="rating" value="1">
+                    <label for="star1" title="1 star - Poor"><i class="fa-solid fa-star"></i></label>
+                </div>
+                <p id="starRatingHint" style="font-size:0.78rem; color:var(--text-muted); margin-top:0.35rem; margin-bottom:0;">5 stars - Outstanding</p>
+            </div>
+            <div class="form-group" style="margin-bottom:1.5rem;">
+                <label class="form-label" for="reviewCommentField"
+                       style="font-size:0.9rem; font-weight:600; color:var(--text-primary); display:block; margin-bottom:0.5rem;">
+                    Your Review <span style="color:var(--error,#ef4444);">*</span>
+                </label>
+                <textarea id="reviewCommentField" name="comment" rows="5" required class="form-control"
+                          placeholder="Write your thoughts about this album..."
+                          style="resize:vertical; min-height:110px;"></textarea>
+            </div>
+            <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+                <button type="submit" id="submitReviewBtn" class="btn-primary" style="padding:0.6rem 1.4rem; font-size:0.9rem; font-weight:600;">
+                    <i class="fa-solid fa-paper-plane"></i> Submit Review
+                </button>
+                <a th:href="@{/my-library}" class="btn-secondary" id="cancelReviewBtn" style="padding:0.6rem 1.2rem; font-size:0.9rem;">Cancel</a>
+            </div>
+        </form>
+    </div>
+</main>
+<footer class="footer"><p>&copy; 2026 MelodyMart Digital Music Store &mdash; All rights reserved.</p></footer>
+<script>
+(function(){
+    var hints={'1':'1 star - Poor','2':'2 stars - Below Average','3':'3 stars - Average','4':'4 stars - Very Good','5':'5 stars - Outstanding'};
+    var hint=document.getElementById('starRatingHint');
+    document.querySelectorAll('#starRatingWidget input[type="radio"]').forEach(function(r){
+        r.addEventListener('change',function(){if(hint)hint.textContent=hints[this.value]||'';});
+    });
+})();
+</script>
+</body>
+</html>
