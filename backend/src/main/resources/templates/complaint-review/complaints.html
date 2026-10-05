@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MelodyMart | My Complaints</title>
+    <meta name="description" content="View and track your support complaints on MelodyMart.">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+<div th:replace="~{fragments/listener-nav :: navbar(activeItem='complaints')}"></div>
+
+<main class="container">
+    <div class="page-header">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+            <div>
+                <h1 class="page-title">
+                    <i class="fa-solid fa-headset" style="color:var(--brand-primary); font-size:0.9em;"></i> My Complaints
+                </h1>
+                <p class="page-subtitle">Track your complaints and responses from MelodyMart support.</p>
+            </div>
+            <a th:href="@{/complaints/new}" class="btn-primary" id="submitComplaintBtn">
+                <i class="fa-solid fa-plus"></i> New Complaint
+            </a>
+        </div>
+    </div>
+
+    <!-- Alerts -->
+    <div th:if="${successMsg}" class="alert alert-success">
+        <i class="fa-solid fa-circle-check"></i> <span th:text="${successMsg}"></span>
+    </div>
+    <div th:if="${errorMsg}" class="alert alert-error">
+        <i class="fa-solid fa-circle-exclamation"></i> <span th:text="${errorMsg}"></span>
+    </div>
+
+    <!-- Empty state -->
+    <div th:if="${#lists.isEmpty(complaints)}"
+         style="text-align:center; padding:4rem 2rem; background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-lg); margin-top:1rem;">
+        <i class="fa-regular fa-folder-open" style="font-size:3rem; color:var(--text-muted); margin-bottom:1rem; display:block;"></i>
+        <h2 style="font-size:1.3rem; color:var(--text-primary); margin-bottom:0.5rem;">You haven't submitted any complaints yet.</h2>
+        <p style="color:var(--text-secondary); margin-bottom:1.5rem; max-width:450px; margin-left:auto; margin-right:auto;">
+            If you need assistance or encounter an issue with your orders, music downloads, or account, submit a complaint and our support team will assist you.
+        </p>
+        <a th:href="@{/complaints/new}" class="btn-primary">
+            <i class="fa-solid fa-plus"></i> New Complaint
+        </a>
+    </div>
+
+    <!-- Complaints table -->
+    <div th:unless="${#lists.isEmpty(complaints)}" class="admin-table-wrap" style="margin-top:1rem;">
+        <div style="overflow-x:auto;">
+            <table class="admin-table" id="complaintsTable">
+                <thead>
+                    <tr>
+                        <th style="width:100px;">Complaint ID</th>
+                        <th>Subject</th>
+                        <th style="width:130px;">Date</th>
+                        <th style="width:140px;">Status</th>
+                        <th>Support Response</th>
+                        <th style="width:160px; text-align:right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="c : ${complaints}">
+                        <td><strong th:text="'#' + ${c[0]}">#1</strong></td>
+                        <td>
+                            <a th:href="@{'/complaints/' + ${c[0]}}" style="font-weight:600; color:var(--text-primary); text-decoration:none;" th:text="${c[1]}">
+                                Subject
+                            </a>
+                        </td>
+                        <td th:text="${c[3] != null ? c[3].toString().substring(0,10) : '—'}">Date</td>
+                        <td>
+                            <span th:switch="${c[4]}">
+                                <span th:case="'Open'"        class="status-chip status-pending"><i class="fa-solid fa-clock"></i> Pending</span>
+                                <span th:case="'Pending'"     class="status-chip status-pending"><i class="fa-solid fa-clock"></i> Pending</span>
+                                <span th:case="'In Progress'" class="status-chip status-inprogress"><i class="fa-solid fa-arrows-rotate fa-spin-pulse" style="--fa-animation-duration:3s;"></i> In Progress</span>
+                                <span th:case="'InProgress'"  class="status-chip status-inprogress"><i class="fa-solid fa-arrows-rotate fa-spin-pulse" style="--fa-animation-duration:3s;"></i> In Progress</span>
+                                <span th:case="'Resolved'"    class="status-chip status-resolved"><i class="fa-solid fa-circle-check"></i> Resolved</span>
+                                <span th:case="'Closed'"      class="status-chip status-closed"><i class="fa-solid fa-lock"></i> Closed</span>
+                                <span th:case="*"             class="status-chip status-closed" th:text="${c[4]}"></span>
+                            </span>
+                        </td>
+                        <td>
+                            <div th:if="${c[5] != null and !c[5].toString().isEmpty()}" style="display:flex; align-items:center; gap:0.4rem;">
+                                <span class="chip chip-green" style="font-size:0.75rem; padding:0.15rem 0.5rem;">
+                                    <i class="fa-solid fa-check"></i> Response Available
+                                </span>
+                                <span style="max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:0.85rem; color:var(--text-secondary);"
+                                      th:text="${c[5]}"></span>
+                            </div>
+                            <span th:unless="${c[5] != null and !c[5].toString().isEmpty()}" style="font-size:0.85rem; color:var(--text-muted); font-style:italic;">
+                                Awaiting response
+                            </span>
+                        </td>
+                        <td style="text-align:right;">
+                            <div style="display:inline-flex; align-items:center; gap:0.4rem;">
+                                <a th:href="@{'/complaints/' + ${c[0]}}" class="btn-secondary"
+                                   style="padding:0.35rem 0.75rem; font-size:0.8rem;" title="View Complaint Details">
+                                    <i class="fa-solid fa-eye"></i> View
+                                </a>
+                                <form th:action="@{'/complaints/' + ${c[0]} + '/delete'}"
+                                      method="post" style="display:inline;"
+                                      th:id="'delete-form-' + ${c[0]}">
+                                    <button type="button" class="btn-secondary"
+                                            style="padding:0.35rem 0.75rem; font-size:0.8rem; color:#ef4444; border-color:#fca5a5; cursor:pointer;"
+                                            th:attr="onclick='confirmDelete(' + ${c[0]} + ')'"
+                                            th:id="'delete-btn-' + ${c[0]}" title="Delete Complaint">
+                                        <i class="fa-solid fa-trash"></i> Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</main>
+
+<footer class="footer"><p>&copy; 2026 MelodyMart Digital Music Store &mdash; All rights reserved.</p></footer>
+
+<script>
+function confirmDelete(complaintId) {
+    if (confirm('Are you sure you want to delete this complaint? This action cannot be undone.')) {
+        document.getElementById('delete-form-' + complaintId).submit();
+    }
+}
+</script>
+
+</body>
+</html>

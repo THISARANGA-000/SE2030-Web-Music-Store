@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${formMode == 'edit' ? 'Edit FAQ | MelodyMart Admin' : 'Add FAQ | MelodyMart Admin'}">FAQ Form | MelodyMart Admin</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+<div class="admin-layout">
+    <div th:replace="~{admin/fragments/sidebar :: sidebar(activeItem='faq')}"></div>
+    <div class="admin-content">
+        <div class="admin-topbar">
+            <nav class="admin-breadcrumb">
+                <a th:href="@{/admin/dashboard}">Dashboard</a>
+                <span class="admin-breadcrumb-sep">/</span>
+                <a th:href="@{/admin/support/faq}">FAQs</a>
+                <span class="admin-breadcrumb-sep">/</span>
+                <span class="admin-breadcrumb-current" th:text="${formMode == 'edit' ? 'Edit FAQ #' + faq[0] : 'Add FAQ'}">Add FAQ</span>
+            </nav>
+        </div>
+        <main class="admin-main">
+            <div class="admin-page-header">
+                <div>
+                    <h1 class="admin-page-title" th:text="${formMode == 'edit' ? 'Edit Frequently Asked Question' : 'Add Frequently Asked Question'}">Frequently Asked Question</h1>
+                    <p class="admin-page-subtitle" th:text="${formMode == 'edit' ? 'Update the question and answer details below.' : 'Add a question and answer to help your listeners.'}">Knowledge base management.</p>
+                </div>
+            </div>
+
+            <div class="admin-card" style="max-width:700px;">
+                <form th:action="${formMode == 'edit'} ? @{/admin/support/faq/edit/{id}(id=${faq[0]})} : @{/admin/support/faq/add}" method="post" class="admin-form">
+                    <div class="form-group">
+                        <label for="question" class="form-label">Question <span style="color:#ef4444;">*</span></label>
+                        <input type="text" id="question" name="question" class="form-control" required
+                               th:value="${faq != null ? faq[1] : ''}"
+                               placeholder="e.g. How do I download purchased music?">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="answer" class="form-label">Answer <span style="color:#ef4444;">*</span></label>
+                        <textarea id="answer" name="answer" class="form-control" rows="5" required
+                                  placeholder="Provide clear instructions or answers..."
+                                  th:text="${faq != null ? faq[2] : ''}"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="faqStatus" class="form-label">Status</label>
+                        <select id="faqStatus" name="faqStatus" class="form-control">
+                            <option value="Published" th:selected="${faq == null or faq[3] == 'Published'}">Published</option>
+                            <option value="Draft" th:selected="${faq != null and faq[3] == 'Draft'}">Draft</option>
+                            <option value="Archived" th:selected="${faq != null and faq[3] == 'Archived'}">Archived</option>
+                        </select>
+                    </div>
+
+                    <div style="display:flex;gap:1rem;margin-top:1.5rem;">
+                        <button type="submit" class="btn-primary">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            <span th:text="${formMode == 'edit' ? 'Update FAQ' : 'Save FAQ'}">Save FAQ</span>
+                        </button>
+                        <a th:href="@{/admin/support/faq}" class="btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

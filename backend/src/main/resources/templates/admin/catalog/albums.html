@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MelodyMart Admin | Albums</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+<div class="admin-layout">
+    <div th:replace="~{admin/fragments/sidebar :: sidebar(activeItem='albums')}"></div>
+
+    <div class="admin-content">
+        <div class="admin-topbar">
+            <div class="admin-topbar-left">
+                <nav class="admin-breadcrumb">
+                    <a th:href="@{/admin/dashboard}">Dashboard</a>
+                    <span class="admin-breadcrumb-sep">/</span>
+                    <span class="admin-breadcrumb-current">Albums</span>
+                </nav>
+            </div>
+        </div>
+
+        <main class="admin-main">
+            <div class="admin-page-header">
+                <div>
+                    <h1 class="admin-page-title">Album Management</h1>
+                    <p class="admin-page-subtitle">Add, edit, and delete albums in the MelodyMart catalog.</p>
+                </div>
+                <a th:href="@{/admin/catalog/albums/add}" class="btn-primary" id="addAlbumBtn">
+                    <i class="fa-solid fa-plus"></i> Add Album
+                </a>
+            </div>
+
+            <!-- Flash messages -->
+            <div th:if="${successMsg}" class="alert alert-success"><i class="fa-solid fa-circle-check"></i> <span th:text="${successMsg}"></span></div>
+            <div th:if="${errorMsg}" class="alert alert-error"><i class="fa-solid fa-circle-xmark"></i> <span th:text="${errorMsg}"></span></div>
+
+            <div class="admin-table-wrap">
+                <div class="admin-table-header">
+                    <span class="admin-table-title"><i class="fa-solid fa-record-vinyl"></i> All Albums</span>
+                    <span style="font-size:0.8rem;color:var(--text-muted);"
+                          th:text="${albums.size()} + ' albums'">0 albums</span>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table class="admin-table" id="albumsTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Title</th>
+                                <th>Artist</th>
+                                <th>Genre</th>
+                                <th>Price</th>
+                                <th>Status</th>
+                                <th>Release</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${albums.isEmpty()}">
+                                <td colspan="8" style="text-align:center;padding:3rem;color:var(--text-muted);">
+                                    <i class="fa-solid fa-record-vinyl" style="font-size:2rem;opacity:0.3;display:block;margin-bottom:0.5rem;"></i>
+                                    No albums found.
+                                </td>
+                            </tr>
+                            <tr th:each="album : ${albums}">
+                                <td th:text="${album.albumId}">1</td>
+                                <td><strong th:text="${album.albumTitle}">Title</strong></td>
+                                <td th:text="${album.artist.artistName}">Artist</td>
+                                <td><span class="chip chip-purple" th:text="${album.genre.genreName}">Genre</span></td>
+                                <td style="color:var(--brand-gold);font-weight:700;"
+                                    th:text="'$' + ${#numbers.formatDecimal(album.price, 1, 2)}">$0.00</td>
+                                <td>
+                                    <span th:switch="${album.albumStatus}">
+                                        <span th:case="'Available'"   class="chip chip-green"  th:text="${album.albumStatus}">Available</span>
+                                        <span th:case="'ComingSoon'"  class="chip chip-blue"   th:text="${album.albumStatus}">Coming Soon</span>
+                                        <span th:case="'Unavailable'" class="chip chip-yellow" th:text="${album.albumStatus}">Unavailable</span>
+                                        <span th:case="*"             class="chip chip-gray"   th:text="${album.albumStatus}">Other</span>
+                                    </span>
+                                </td>
+                                <td th:text="${album.releaseDate != null ? album.releaseDate.toString() : '—'}">—</td>
+                                <td>
+                                    <div class="action-btns">
+                                        <a th:href="@{/admin/catalog/albums/edit/{id}(id=${album.albumId})}"
+                                           class="btn-view" title="Edit"><i class="fa-solid fa-pen"></i></a>
+                                        <form th:action="@{/admin/catalog/albums/delete/{id}(id=${album.albumId})}"
+                                              method="post" style="display:inline;"
+                                              onsubmit="return confirm('Delete this album?');">
+                                            <button type="submit" class="btn-danger"
+                                                    style="padding:0.45rem 0.7rem;font-size:0.8rem;"
+                                                    title="Delete">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+
+        <footer class="admin-footer">&copy; 2026 MelodyMart &mdash; All rights reserved.</footer>
+    </div>
+</div>
+</body>
+</html>
