@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MelodyMart | Frequently Asked Questions</title>
+    <meta name="description" content="Find answers to common questions about music downloads, purchases, licenses, and accounts on MelodyMart.">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+<!-- Navigation -->
+<div th:replace="~{fragments/listener-nav :: navbar(activeItem='faqs')}"></div>
+
+<main class="container" style="max-width:900px;">
+    <div class="page-header" style="text-align:center; margin-bottom:2.5rem;">
+        <h1 class="page-title" style="justify-content:center;">
+            <i class="fa-solid fa-circle-question" style="color:var(--brand-primary); font-size:0.9em;"></i> Frequently Asked Questions
+        </h1>
+        <p class="page-subtitle" style="margin:0 auto; max-width:600px;">
+            Have questions about purchasing music, digital library access, audio formats, or playlists? We have answers.
+        </p>
+    </div>
+
+    <!-- Empty State -->
+    <div th:if="${#lists.isEmpty(faqs)}"
+         style="text-align:center; padding:4rem 2rem; background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-lg);">
+        <i class="fa-solid fa-comments-question-check" style="font-size:3rem; color:var(--text-muted); margin-bottom:1rem;"></i>
+        <h2 style="font-size:1.3rem; color:var(--text-primary); margin-bottom:0.5rem;">No FAQs Available</h2>
+        <p style="color:var(--text-secondary); margin-bottom:1.5rem;">If you need assistance, please submit a support ticket via Complaints.</p>
+        <a th:href="@{/complaints/new}" class="btn-primary">
+            <i class="fa-solid fa-triangle-exclamation"></i> Submit Support Complaint
+        </a>
+    </div>
+
+    <!-- FAQs List -->
+    <div th:unless="${#lists.isEmpty(faqs)}" style="display:flex; flex-direction:column; gap:1.25rem;">
+        <div th:each="faq, stat : ${faqs}" class="card" style="padding:1.5rem; transition:var(--transition);">
+            <div style="display:flex; align-items:flex-start; gap:1rem;">
+                <div style="width:36px; height:36px; border-radius:var(--radius-full); background:var(--bg-subtle); color:var(--brand-primary); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.95rem; flex-shrink:0;">
+                    Q
+                </div>
+                <div style="flex:1;">
+                    <h2 style="font-size:1.1rem; font-weight:700; color:var(--text-primary); margin-bottom:0.6rem; line-height:1.4;"
+                        th:text="${faq.question}">
+                        Question title?
+                    </h2>
+                    <div style="color:var(--text-secondary); font-size:0.93rem; line-height:1.7; background:var(--bg-subtle); padding:1.15rem; border-radius:var(--radius-sm); border:1px solid var(--border-color);"
+                         th:text="${faq.answer}">
+                        Detailed answer text...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Still Have Questions Banner -->
+    <div style="margin-top:3rem; padding:2rem; background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-lg); text-align:center;">
+        <h3 style="font-size:1.2rem; font-weight:700; color:var(--text-primary); margin-bottom:0.5rem;">
+            Still have questions?
+        </h3>
+        <p style="color:var(--text-secondary); font-size:0.92rem; margin-bottom:1.25rem;">
+            Our support team is happy to help resolve any billing, download, or account concerns.
+        </p>
+        <a th:href="@{/complaints/new}" class="btn-secondary" style="display:inline-flex; align-items:center; gap:0.4rem;">
+            <i class="fa-solid fa-triangle-exclamation"></i> Open Support Complaint
+        </a>
+    </div>
+</main>
+
+<footer class="footer">
+    <p>&copy; 2026 MelodyMart Digital Music Store &mdash; All rights reserved.</p>
+</footer>
+
+</body>
+</html>
