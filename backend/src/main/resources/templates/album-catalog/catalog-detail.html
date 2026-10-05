@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${catalog.catalogName} + ' | MelodyMart Catalog'">Catalog Details</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+<!-- Navigation -->
+<div th:replace="~{fragments/listener-nav :: navbar(activeItem='catalogs')}"></div>
+
+<main class="container">
+    <a th:href="@{/catalogs}" class="back-link">
+        <i class="fa-solid fa-arrow-left"></i> Back to Explore Catalogs
+    </a>
+
+    <!-- Hero Card -->
+    <div class="album-detail-hero" style="grid-template-columns: 140px 1fr; align-items:center;">
+        <div style="width:140px; height:140px; border-radius:var(--radius-md); background:#eff6ff; color:var(--brand-primary); display:flex; align-items:center; justify-content:center; font-size:3.5rem; border:1px solid #bfdbfe;">
+            <i class="fa-solid fa-layer-group"></i>
+        </div>
+        <div>
+            <span class="role-badge role-badge-catalog" style="margin-bottom:0.5rem; display:inline-block;">
+                <i class="fa-solid fa-box-archive"></i> Box Set Bundle
+            </span>
+            <h1 style="font-size:2rem; font-weight:800; color:var(--text-primary); margin-bottom:0.5rem;"
+                th:text="${catalog.catalogName}">Catalog Bundle</h1>
+            <p style="color:var(--text-secondary); font-size:0.95rem; line-height:1.6; margin-bottom:1.25rem;"
+               th:text="${catalog.description}">Complete collection details.</p>
+            <div style="display:flex; flex-wrap:wrap; gap:1.5rem; align-items:center;">
+                <div>
+                    <span style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:600; display:block;">Bundle Price</span>
+                    <span style="font-family:'Plus Jakarta Sans', sans-serif; font-size:1.75rem; font-weight:800; color:var(--text-primary);"
+                          th:text="'$' + ${#numbers.formatDecimal(catalog.price, 1, 2)}">$24.99</span>
+                </div>
+                <form th:action="@{/cart/add-catalog}" method="post">
+                    <input type="hidden" name="catalogId" th:value="${catalog.catalogId}">
+                    <button type="submit" class="btn-primary" style="padding:0.75rem 1.5rem; font-size:0.95rem;">
+                        <i class="fa-solid fa-cart-plus"></i> Add Bundle to Cart
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Included Albums Section -->
+    <div style="margin-top:2.5rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border-color);">
+            <h2 style="font-size:1.35rem; font-weight:700; color:var(--text-primary);">
+                <i class="fa-solid fa-compact-disc" style="color:var(--brand-primary); font-size:0.9em;"></i>
+                Albums Included in this Bundle (<span th:text="${albums.size()}">0</span>)
+            </h2>
+        </div>
+
+        <div th:if="${albums.isEmpty()}" class="empty-state">
+            <i class="fa-solid fa-compact-disc"></i>
+            <p>No individual albums currently tagged in this catalog.</p>
+        </div>
+
+        <div th:unless="${albums.isEmpty()}" class="albums-grid">
+            <article th:each="album : ${albums}" class="album-card">
+                <div class="cover-wrapper">
+                    <span class="genre-badge" th:text="${album.genre != null ? album.genre.genreName : 'Music'}">Genre</span>
+                    <img th:src="${album.coverImageUrl != null and !album.coverImageUrl.isEmpty()}
+                                    ? @{${album.coverImageUrl}}
+                                    : 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&auto=format&fit=crop&q=60'"
+                         th:alt="${album.albumTitle}"
+                         class="cover-img"
+                         onerror="this.src='https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&auto=format&fit=crop&q=60'">
+                </div>
+                <div class="album-details">
+                    <div>
+                        <a th:href="@{/albums/{id}(id=${album.albumId})}"
+                           class="album-title"
+                           th:text="${album.albumTitle}">Album Title</a>
+                        <p class="artist-name">
+                            <i class="fa-solid fa-user" style="font-size:0.75rem; color:var(--text-muted);"></i>
+                            <span th:text="${album.artist != null ? album.artist.artistName : 'Unknown'}">Artist</span>
+                        </p>
+                    </div>
+                    <div class="card-footer">
+                        <div th:if="${album.hasDiscount()}" style="display:flex; flex-direction:column; gap:0.1rem;">
+                            <div style="display:flex; align-items:center; gap:0.35rem;">
+                                <span style="font-size:0.75rem; text-decoration:line-through; color:var(--text-muted);"
+                                      th:text="'$' + ${#numbers.formatDecimal(album.price, 1, 2)}">$9.99</span>
+                                <span th:if="${album.discountLabel != null}" style="font-size:0.68rem; font-weight:700; background:#E8F5E9; color:#2E7D32; padding:0.1rem 0.35rem; border-radius:4px;"
+                                      th:text="${album.discountLabel}">20% OFF</span>
+                            </div>
+                            <span class="album-price" style="color:var(--success);"
+                                  th:text="'$' + ${#numbers.formatDecimal(album.discountedPrice, 1, 2)}">$7.99</span>
+                        </div>
+                        <span th:unless="${album.hasDiscount()}" class="album-price"
+                              th:text="'$' + ${#numbers.formatDecimal(album.price, 1, 2)}">$9.99</span>
+                        <a th:href="@{/albums/{id}(id=${album.albumId})}" class="btn-secondary btn-sm">
+                            View Album
+                        </a>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </div>
+</main>
+
+<footer class="footer">
+    <p>&copy; 2026 MelodyMart Digital Music Store &mdash; All rights reserved.</p>
+</footer>
+
+</body>
+</html>

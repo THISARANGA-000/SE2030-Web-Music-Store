@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'MelodyMart Admin | Complaint #' + ${complaint[0]}">MelodyMart Admin | Complaint Detail</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+<div class="admin-layout">
+    <div th:replace="~{admin/fragments/sidebar :: sidebar(activeItem='complaints')}"></div>
+    <div class="admin-content">
+        <div class="admin-topbar">
+            <nav class="admin-breadcrumb">
+                <a th:href="@{/admin/dashboard}">Dashboard</a>
+                <span class="admin-breadcrumb-sep">/</span>
+                <a th:href="@{/admin/support/complaints}">Complaints</a>
+                <span class="admin-breadcrumb-sep">/</span>
+                <span class="admin-breadcrumb-current" th:text="'Complaint #' + ${complaint[0]}">Detail</span>
+            </nav>
+        </div>
+        <main class="admin-main">
+            <div class="admin-page-header">
+                <div>
+                    <h1 class="admin-page-title" th:text="'Complaint #' + ${complaint[0]}">Complaint Details</h1>
+                    <p class="admin-page-subtitle" th:text="'Subject: ' + ${complaint[3]}">Customer Complaint</p>
+                </div>
+                <div>
+                    <a th:href="@{/admin/support/complaints}" class="btn-secondary">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Complaints
+                    </a>
+                </div>
+            </div>
+
+            <div th:if="${successMsg}" class="alert alert-success"><i class="fa-solid fa-circle-check"></i> <span th:text="${successMsg}"></span></div>
+            <div th:if="${errorMsg}"   class="alert alert-error"><i class="fa-solid fa-circle-xmark"></i> <span th:text="${errorMsg}"></span></div>
+
+            <div style="display:grid; grid-template-columns: 2fr 1fr; gap:1.5rem; align-items:start;" class="complaint-detail-grid">
+                <!-- Main Content Column -->
+                <div style="display:flex; flex-direction:column; gap:1.5rem;">
+                    
+                    <!-- Full Complaint Description -->
+                    <div class="admin-form-card">
+                        <h3 style="font-size:1.05rem; font-weight:700; color:var(--text-primary); margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
+                            <i class="fa-solid fa-message" style="color:var(--brand-primary);"></i> Complaint Description
+                        </h3>
+                        <div style="background:var(--bg-subtle, #f9fafb); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:1.25rem; font-size:0.95rem; line-height:1.75; color:var(--text-primary); white-space:pre-wrap;"
+                             th:text="${complaint[4]}">
+                            Complaint description text...
+                        </div>
+                    </div>
+
+                    <!-- Current Support Response -->
+                    <div class="admin-form-card">
+                        <div class="support-response-card-header">
+                            <h3 class="support-response-card-title">
+                                <i class="fa-solid fa-headset" style="color:var(--brand-primary);"></i> Current Support Response
+                            </h3>
+                            <span th:if="${complaint[7] != null and !complaint[7].toString().trim().isEmpty()}"
+                                  class="support-response-pill-active">
+                                <i class="fa-solid fa-circle-check"></i> Responded
+                            </span>
+                            <span th:unless="${complaint[7] != null and !complaint[7].toString().trim().isEmpty()}"
+                                  class="support-response-pill-pending">
+                                <i class="fa-regular fa-clock"></i> Awaiting Response
+                            </span>
+                        </div>
+
+                        <!-- If response exists -->
+                        <div th:if="${complaint[7] != null and !complaint[7].toString().trim().isEmpty()}"
+                             class="support-response-box support-response-active">
+                            <div class="support-response-meta-row" th:if="${complaint[8] != null and !complaint[8].toString().isEmpty()}">
+                                <span class="support-response-timestamp">
+                                    <i class="fa-regular fa-calendar-check"></i> Resolved Date: <strong th:text="${complaint[8].toString().substring(0, 16)}">2026-08-22 14:00</strong>
+                                </span>
+                            </div>
+                            <div class="support-response-content" th:text="${complaint[7]}">
+                                Existing response text...
+                            </div>
+                        </div>
+
+                        <!-- If no response yet -->
+                        <div th:unless="${complaint[7] != null and !complaint[7].toString().trim().isEmpty()}"
+                             class="support-response-box support-response-empty">
+                            <div class="support-response-empty-icon">
+                                <i class="fa-regular fa-comment-dots"></i>
+                            </div>
+                            <div class="support-response-empty-text">
+                                <strong>No response has been added yet.</strong>
+                                <p>Use the form below to write and save an official response to this customer complaint.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Admin Response & Status Update Form -->
+                    <div class="admin-form-card">
+                        <h3 style="font-size:1.05rem; font-weight:700; color:var(--text-primary); margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
+                            <i class="fa-solid fa-reply" style="color:var(--brand-primary);"></i> Admin Response &amp; Status Update
+                        </h3>
+                        <form th:action="@{/admin/support/complaints/{id}/status(id=${complaint[0]})}" method="post">
+                            <input type="hidden" name="returnUrl" th:value="@{'/admin/support/complaints/' + ${complaint[0]}}">
+                            
+                            <div class="form-group" style="margin-bottom:1.25rem;">
+                                <label class="form-label" style="font-size:0.88rem; font-weight:600; margin-bottom:0.4rem; display:block;">
+                                    Admin Response
+                                </label>
+                                <textarea name="response" rows="5" class="form-control"
+                                          placeholder="Type support response or resolution notes here..."
+                                          style="resize:vertical; min-height:110px;"
+                                          th:text="${complaint[7]}"></textarea>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom:1.5rem; max-width:280px;">
+                                <label class="form-label" style="font-size:0.88rem; font-weight:600; margin-bottom:0.4rem; display:block;">
+                                    Status
+                                </label>
+                                <select name="status" class="form-control select-control" required>
+                                    <option value="Open"        th:selected="${complaint[6] == 'Open' or complaint[6] == 'Pending'}">Pending / Open</option>
+                                    <option value="In Progress" th:selected="${complaint[6] == 'In Progress' or complaint[6] == 'InProgress'}">In Progress</option>
+                                    <option value="Resolved"    th:selected="${complaint[6] == 'Resolved'}">Resolved</option>
+                                    <option value="Closed"      th:selected="${complaint[6] == 'Closed'}">Closed</option>
+                                </select>
+                            </div>
+
+                            <button type="submit" class="btn-primary" style="padding:0.6rem 1.4rem; font-weight:600;">
+                                <i class="fa-solid fa-floppy-disk"></i> Save Response &amp; Update Status
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+
+                <!-- Metadata Sidebar Column -->
+                <div class="admin-form-card" style="display:flex; flex-direction:column; gap:1.25rem;">
+                    <h3 style="font-size:1.05rem; font-weight:700; color:var(--text-primary); border-bottom:1px solid var(--border-color); padding-bottom:0.75rem;">
+                        Complaint Info
+                    </h3>
+
+                    <div>
+                        <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; display:block; margin-bottom:0.25rem;">Complaint ID</span>
+                        <span style="font-size:1.1rem; font-weight:700; color:var(--text-primary);" th:text="'#' + ${complaint[0]}">#1</span>
+                    </div>
+
+                    <div>
+                        <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; display:block; margin-bottom:0.25rem;">Listener</span>
+                        <a th:if="${complaint.length > 9 and complaint[9] != null}" th:href="@{'/admin/listeners/' + ${complaint[9]}}"
+                           style="font-size:1rem; font-weight:600; color:var(--brand-primary); text-decoration:none;" th:text="${complaint[1]}">Listener Name</a>
+                        <span th:unless="${complaint.length > 9 and complaint[9] != null}"
+                              style="font-size:1rem; font-weight:600; color:var(--text-primary);" th:text="${complaint[1]}">Listener Name</span>
+                    </div>
+
+                    <div>
+                        <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; display:block; margin-bottom:0.25rem;">Email</span>
+                        <span style="font-size:0.95rem; color:var(--text-secondary);" th:text="${complaint[2] != null ? complaint[2] : '—'}">user@example.com</span>
+                    </div>
+
+                    <div>
+                        <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; display:block; margin-bottom:0.25rem;">Subject</span>
+                        <span style="font-size:0.95rem; font-weight:600; color:var(--text-primary);" th:text="${complaint[3]}">Subject</span>
+                    </div>
+
+                    <div>
+                        <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; display:block; margin-bottom:0.4rem;">Status</span>
+                        <div>
+                            <span th:switch="${complaint[6]}">
+                                <span th:case="'Open'"        class="status-chip status-pending"><i class="fa-solid fa-clock"></i> Pending / Open</span>
+                                <span th:case="'Pending'"     class="status-chip status-pending"><i class="fa-solid fa-clock"></i> Pending</span>
+                                <span th:case="'In Progress'" class="status-chip status-inprogress"><i class="fa-solid fa-arrows-rotate fa-spin-pulse" style="--fa-animation-duration:3s;"></i> In Progress</span>
+                                <span th:case="'InProgress'"  class="status-chip status-inprogress"><i class="fa-solid fa-arrows-rotate fa-spin-pulse" style="--fa-animation-duration:3s;"></i> In Progress</span>
+                                <span th:case="'Resolved'"    class="status-chip status-resolved"><i class="fa-solid fa-circle-check"></i> Resolved</span>
+                                <span th:case="'Closed'"      class="status-chip status-closed"><i class="fa-solid fa-lock"></i> Closed</span>
+                                <span th:case="*"             class="status-chip status-closed" th:text="${complaint[6]}">—</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; display:block; margin-bottom:0.25rem;">Submitted Date</span>
+                        <span style="font-size:0.92rem; font-weight:500; color:var(--text-primary);"
+                              th:text="${complaint[5] != null ? complaint[5].toString().substring(0, 16) : '—'}">2026-08-20 10:00</span>
+                    </div>
+
+                    <div th:if="${complaint[8] != null and !complaint[8].toString().isEmpty()}">
+                        <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; display:block; margin-bottom:0.25rem;">Resolved Date</span>
+                        <span style="font-size:0.92rem; font-weight:600; color:var(--success);"
+                              th:text="${complaint[8].toString().substring(0, 16)}">2026-08-22 14:00</span>
+                    </div>
+
+                    <div style="padding-top:0.75rem; border-top:1px solid var(--border-color);">
+                        <a th:href="@{/admin/support/complaints}" class="btn-secondary" style="width:100%; text-align:center; display:block;">
+                            <i class="fa-solid fa-arrow-left"></i> All Complaints
+                        </a>
+                    </div>
+
+                    <div style="padding-top:0.5rem;">
+                        <form th:action="@{/admin/support/complaints/{id}/delete(id=${complaint[0]})}" method="post"
+                              onsubmit="return confirm('Are you sure you want to permanently delete this complaint? This action cannot be undone.');">
+                            <button type="submit" class="btn-secondary"
+                                    style="width:100%; text-align:center; display:block; padding:0.55rem 1rem; font-size:0.88rem; font-weight:600; color:#ef4444; border-color:#fecaca;">
+                                <i class="fa-solid fa-trash"></i> Delete Complaint
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <footer class="admin-footer">&copy; 2026 MelodyMart &mdash; All rights reserved.</footer>
+    </div>
+</div>
+</body>
+</html>
