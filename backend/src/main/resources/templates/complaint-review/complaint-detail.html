@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'MelodyMart | Complaint #' + ${complaint[0]}">MelodyMart | Complaint Details</title>
+    <meta name="description" content="View details of your complaint on MelodyMart.">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+<div th:replace="~{fragments/listener-nav :: navbar(activeItem='complaints')}"></div>
+
+<main class="container">
+    <div class="page-header">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+            <div>
+                <nav style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0.4rem;">
+                    <a th:href="@{/complaints}" style="color:var(--brand-primary); text-decoration:none;">My Complaints</a>
+                    <span> / </span>
+                    <span th:text="'Complaint #' + ${complaint[0]}">#1</span>
+                </nav>
+                <h1 class="page-title" style="display:flex; align-items:center; gap:0.6rem;">
+                    <i class="fa-solid fa-file-lines" style="color:var(--brand-primary); font-size:0.9em;"></i>
+                    <span th:text="${complaint[1]}">Subject</span>
+                </h1>
+            </div>
+            <div style="display:flex; gap:0.5rem;">
+                <a th:if="${(new java.util.Date().getTime() - complaint[3].getTime()) <= 600000}" 
+                   th:href="@{'/complaints/' + ${complaint[0]} + '/edit'}" class="btn-primary">
+                    <i class="fa-solid fa-pen"></i> Edit Complaint
+                </a>
+                <a th:href="@{/complaints}" class="btn-secondary">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Complaints
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:2fr 1fr; gap:1.5rem; align-items:start;" class="complaint-detail-grid">
+        <!-- Main Content -->
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+            <!-- Complaint Description Card -->
+            <div class="card" style="padding:1.75rem;">
+                <h3 style="font-size:1.1rem; font-weight:700; color:var(--text-primary); margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
+                    <i class="fa-solid fa-message" style="color:var(--brand-primary);"></i> Complaint Description
+                </h3>
+                <div style="color:var(--text-primary); line-height:1.75; white-space:pre-wrap; font-size:0.95rem; background:var(--bg-subtle, #f9fafb); padding:1.25rem; border-radius:var(--radius-md); border:1px solid var(--border-color);"
+                     th:text="${complaint[2]}">Description content...</div>
+            </div>
+
+            <!-- Support Response Card -->
+            <div class="card" style="padding:1.75rem;">
+                <div class="support-response-card-header">
+                    <h3 class="support-response-card-title">
+                        <i class="fa-solid fa-headset" style="color:var(--brand-primary);"></i> Current Support Response
+                    </h3>
+                    <span th:if="${complaint[5] != null and !complaint[5].toString().trim().isEmpty()}"
+                          class="support-response-pill-active">
+                        <i class="fa-solid fa-circle-check"></i> Official Reply
+                    </span>
+                    <span th:unless="${complaint[5] != null and !complaint[5].toString().trim().isEmpty()}"
+                          class="support-response-pill-pending">
+                        <i class="fa-regular fa-clock"></i> Under Review
+                    </span>
+                </div>
+
+                <!-- If response exists -->
+                <div th:if="${complaint[5] != null and !complaint[5].toString().trim().isEmpty()}"
+                     class="support-response-box support-response-active">
+                    <div class="support-response-meta-row" th:if="${complaint[6] != null and !complaint[6].toString().isEmpty()}">
+                        <span class="support-response-timestamp">
+                            <i class="fa-regular fa-calendar-check"></i> Resolved Date: <strong th:text="${complaint[6].toString().substring(0, 16)}">2026-08-22 14:00</strong>
+                        </span>
+                    </div>
+                    <div class="support-response-content" th:text="${complaint[5]}">
+                        Support response content...
+                    </div>
+                </div>
+
+                <!-- If no response yet -->
+                <div th:unless="${complaint[5] != null and !complaint[5].toString().trim().isEmpty()}"
+                     class="support-response-box support-response-empty">
+                    <div class="support-response-empty-icon">
+                        <i class="fa-regular fa-clock"></i>
+                    </div>
+                    <div class="support-response-empty-text">
+                        <strong>No response has been added yet.</strong>
+                        <p>Our support team has received your complaint and is actively reviewing it. Updates will appear here.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Meta Sidebar Card -->
+        <div class="card" style="padding:1.75rem; display:flex; flex-direction:column; gap:1.25rem;">
+            <h3 style="font-size:1.05rem; font-weight:700; color:var(--text-primary); border-bottom:1px solid var(--border-color); padding-bottom:0.75rem;">
+                Complaint Details
+            </h3>
+
+            <div>
+                <div style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-muted); margin-bottom:0.25rem; font-weight:600;">Complaint ID</div>
+                <div style="font-weight:700; color:var(--text-primary); font-size:1.05rem;" th:text="'#' + ${complaint[0]}">#1</div>
+            </div>
+
+            <div>
+                <div style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-muted); margin-bottom:0.4rem; font-weight:600;">Status</div>
+                <div>
+                    <span th:switch="${complaint[4]}">
+                        <span th:case="'Open'"        class="status-chip status-pending"><i class="fa-solid fa-clock"></i> Pending / Open</span>
+                        <span th:case="'Pending'"     class="status-chip status-pending"><i class="fa-solid fa-clock"></i> Pending</span>
+                        <span th:case="'In Progress'" class="status-chip status-inprogress"><i class="fa-solid fa-arrows-rotate fa-spin-pulse" style="--fa-animation-duration:3s;"></i> In Progress</span>
+                        <span th:case="'InProgress'"  class="status-chip status-inprogress"><i class="fa-solid fa-arrows-rotate fa-spin-pulse" style="--fa-animation-duration:3s;"></i> In Progress</span>
+                        <span th:case="'Resolved'"    class="status-chip status-resolved"><i class="fa-solid fa-circle-check"></i> Resolved</span>
+                        <span th:case="'Closed'"      class="status-chip status-closed"><i class="fa-solid fa-lock"></i> Closed</span>
+                        <span th:case="*"             class="status-chip status-closed" th:text="${complaint[4]}"></span>
+                    </span>
+                </div>
+            </div>
+
+            <div>
+                <div style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-muted); margin-bottom:0.25rem; font-weight:600;">Submitted</div>
+                <div style="font-weight:500; color:var(--text-primary);"
+                     th:text="${complaint[3] != null ? complaint[3].toString().substring(0, 16) : '—'}">2026-08-20 10:00</div>
+            </div>
+
+            <div th:if="${complaint[6] != null and !complaint[6].toString().isEmpty()}">
+                <div style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-muted); margin-bottom:0.25rem; font-weight:600;">Resolved Date</div>
+                <div style="font-weight:600; color:var(--success);"
+                     th:text="${complaint[6].toString().substring(0, 16)}">2026-08-22 14:00</div>
+            </div>
+
+            <div style="padding-top:0.75rem; border-top:1px solid var(--border-color); display:flex; flex-direction:column; gap:0.5rem;">
+                <form th:action="@{'/complaints/' + ${complaint[0]} + '/delete'}" method="post"
+                      onsubmit="return confirm('Are you sure you want to delete this complaint? This action cannot be undone.');">
+                    <button type="submit" class="btn-secondary" style="width:100%; text-align:center; color:#ef4444; border-color:#fca5a5;">
+                        <i class="fa-solid fa-trash"></i> Delete Complaint
+                    </button>
+                </form>
+                <a th:href="@{/complaints}" class="btn-secondary" style="width:100%; text-align:center;">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Complaints
+                </a>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer class="footer">
+    <p>&copy; 2026 MelodyMart Digital Music Store &mdash; All rights reserved.</p>
+</footer>
+
+</body>
+</html>
