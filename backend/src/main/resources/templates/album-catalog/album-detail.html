@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'MelodyMart | ' + ${album.albumTitle}">MelodyMart | Album Detail</title>
+    <meta name="description" th:content="${album.description}">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+<!-- Navigation -->
+<div th:replace="~{fragments/listener-nav :: navbar(activeItem='albums')}"></div>
+
+<main class="container">
+
+    <!-- Back Link -->
+    <a th:href="@{/albums}" class="back-link" id="backToAlbums">
+        <i class="fa-solid fa-arrow-left"></i> Back to Explore Albums
+    </a>
+
+    <!-- Alerts -->
+    <div th:if="${successMsg}" class="alert alert-success" style="margin-bottom:1rem;">
+        <i class="fa-solid fa-circle-check"></i> <span th:text="${successMsg}"></span>
+    </div>
+    <div th:if="${errorMsg}" class="alert alert-error" style="margin-bottom:1rem;">
+        <i class="fa-solid fa-circle-exclamation"></i> <span th:text="${errorMsg}"></span>
+    </div>
+
+    <!-- Album Hero -->
+    <div class="album-detail-hero">
+
+        <!-- Cover Image -->
+        <div class="album-detail-cover">
+            <img th:src="${album.coverImageUrl != null and !album.coverImageUrl.isEmpty()}
+                            ? @{${album.coverImageUrl}}
+                            : 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&auto=format&fit=crop&q=60'"
+                 th:alt="${album.albumTitle}"
+                 id="albumCoverImg"
+                 onerror="this.src='https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&auto=format&fit=crop&q=60'">
+        </div>
+
+        <!-- Album Info -->
+        <div class="album-detail-info">
+            <span class="album-detail-genre" th:text="${album.genre.genreName}">Genre</span>
+
+            <h1 class="album-detail-title" th:text="${album.albumTitle}">Album Title</h1>
+
+            <p class="album-detail-artist">
+                by <a href="#artist-info" th:text="${album.artist.artistName}">Artist Name</a>
+                &nbsp;<span style="color:var(--text-secondary);font-size:0.875rem;"
+                            th:text="'(' + ${album.artist.country} + ')'"></span>
+            </p>
+
+            <div class="album-meta-row">
+                <span class="album-meta-item">
+                    <i class="fa-regular fa-calendar" style="color:var(--text-muted);"></i>
+                    <span th:text="${album.releaseDate != null ? album.releaseDate : 'N/A'}">2024</span>
+                </span>
+                <span class="album-meta-item">
+                    <i class="fa-solid fa-list-ol" style="color:var(--text-muted);"></i>
+                    <span th:text="${#lists.size(album.tracks)} + ' tracks'">0 tracks</span>
+                </span>
+                <span class="album-meta-item">
+                    <i class="fa-solid fa-circle-check" style="color:var(--success);"></i>
+                    <span th:text="${album.albumStatus}">Available</span>
+                </span>
+                <span th:if="${album.catalog != null}" class="album-meta-item">
+                    <i class="fa-solid fa-layer-group" style="color:var(--brand-primary);"></i>
+                    <span th:text="'Bundle: ' + ${album.catalog.catalogName}">Bundle</span>
+                </span>
+            </div>
+
+            <div th:if="${album.hasDiscount()}" style="margin-bottom:0.75rem;">
+                <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+                    <span style="font-size:1.15rem; text-decoration:line-through; color:var(--text-muted);"
+                          th:text="'$' + ${#numbers.formatDecimal(album.price, 1, 2)}">$9.99</span>
+                    <span class="album-detail-price" style="color:var(--success); margin:0;"
+                          th:text="'$' + ${#numbers.formatDecimal(album.discountedPrice, 1, 2)}">$7.99</span>
+                    <span th:if="${album.discountLabel != null}" style="font-size:0.8rem; font-weight:700; background:#E8F5E9; color:#2E7D32; padding:0.2rem 0.5rem; border-radius:4px;"
+                          th:text="${album.discountLabel}">20% OFF</span>
+                </div>
+            </div>
+            <div th:unless="${album.hasDiscount()}" class="album-detail-price"
+                 th:text="'$' + ${#numbers.formatDecimal(album.price, 1, 2)}">$9.99</div>
+
+            <!-- Active Promotional Offers -->
+            <div th:if="${activePromotions != null and !activePromotions.isEmpty()}" style="margin: 0 0 1.25rem 0;">
+                <div th:each="promo : ${activePromotions}" class="promo-offer-badge">
+                    <i class="fa-solid fa-tag"></i>
+                    <span th:text="${promo[1]}">Special Offer</span>:
+                    <span th:if="${'Percentage'.equals(promo[2])}" th:text="${promo[3]} + '% OFF'">10% OFF</span>
+                    <span th:if="${'FixedAmount'.equals(promo[2])}" th:text="'$' + ${promo[3]} + ' OFF'">$5 OFF</span>
+                </div>
+            </div>
+
+            <p class="album-description" th:text="${album.description}">Description</p>
+
+            <div class="album-hero-actions">
+                <form th:action="@{/cart/add}" method="post">
+                    <input type="hidden" name="albumId" th:value="${album.albumId}">
+                    <button type="submit" class="btn-primary" id="addToCartBtn">
+                        <i class="fa-solid fa-cart-plus"></i> Add to Cart
+                    </button>
+                </form>
+                <a th:href="@{/albums}" class="btn-secondary">
+                    <i class="fa-solid fa-arrow-left"></i> Browse Catalog
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Track List -->
+    <div class="tracklist-section" id="trackList">
+        <div class="tracklist-header">
+            <i class="fa-solid fa-list-music" style="color:var(--brand-primary);"></i>
+            <h3>Track Listing</h3>
+        </div>
+        <div th:if="${#lists.isEmpty(album.tracks)}" style="padding:2rem; text-align:center; color:var(--text-muted);">
+            No tracks listed for this album.
+        </div>
+        <div th:each="track : ${album.tracks}" class="track-row" style="display:flex; align-items:center; gap:0.75rem; padding:0.65rem 0.75rem; border-bottom:1px solid var(--border-color); flex-wrap:wrap;">
+            <span class="track-number" th:text="${track.trackNumber}" style="width:28px; font-weight:700; color:var(--text-secondary); text-align:center;">1</span>
+            <span class="track-title" th:text="${track.trackTitle}" style="flex:1; min-width:180px; font-weight:600; color:var(--text-primary);">Track Title</span>
+            <span class="track-duration" style="font-size:0.85rem; color:var(--text-secondary); min-width:60px;">
+                <i class="fa-regular fa-clock" style="font-size:0.75rem; margin-right:0.25rem;"></i>
+                <span th:text="${track.formattedDuration}">3:45</span>
+            </span>
+            <div class="track-player-wrap" style="flex-shrink:0;">
+                <div th:if="${track.audioFileUrl != null and !#strings.isEmpty(track.audioFileUrl)}">
+                    <audio controls preload="none" style="height:32px; max-width:240px; outline:none;">
+                        <source th:src="@{${track.audioFileUrl}}" type="audio/mpeg">
+                        Your browser does not support the audio element.
+                    </audio>
+                </div>
+                <div th:unless="${track.audioFileUrl != null and !#strings.isEmpty(track.audioFileUrl)}">
+                    <span style="font-size:0.78rem; color:var(--text-muted); font-style:italic;">
+                        <i class="fa-solid fa-volume-xmark" style="margin-right:0.25rem;"></i>Audio preview unavailable
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Artist Info -->
+    <div class="info-section" id="artist-info" style="margin-top:1.5rem;">
+        <h3 style="margin-bottom:0.75rem; display:flex; align-items:center; gap:0.5rem;">
+            <i class="fa-solid fa-microphone-lines" style="color:var(--brand-primary);"></i> About the Artist
+        </h3>
+        <p style="margin-bottom:0.4rem; font-size:0.95rem;">
+            <strong th:text="${album.artist.artistName}">Artist</strong>
+            &nbsp;&mdash;&nbsp;<span th:text="${album.artist.country}" style="color:var(--text-secondary);">Country</span>
+        </p>
+        <p th:text="${album.artist.biography}" style="color:var(--text-secondary); line-height:1.6;">Artist biography...</p>
+    </div>
+
+    <!-- Customer Reviews Section -->
+    <div class="info-section reviews-section" id="reviews" style="margin-top:2rem; background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-lg); padding:2rem;">
+        
+        <!-- Header & Average Rating Banner -->
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.5rem; border-bottom:1px solid var(--border-color); padding-bottom:1.5rem; flex-wrap:wrap; gap:1.25rem;">
+            <div>
+                <h3 style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem; font-size:1.35rem; font-weight:800; color:var(--text-primary);">
+                    <i class="fa-solid fa-star" style="color:#f59e0b;"></i> Customer Reviews
+                </h3>
+                
+                <div th:if="${reviewCount > 0}" style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+                    <div style="font-size:2rem; font-weight:800; color:var(--text-primary); line-height:1;" th:text="${avgRating}">4.5</div>
+                    <div>
+                        <div style="color:#f59e0b; font-size:1.15rem; margin-bottom:0.2rem;">
+                            <span th:each="i : ${#numbers.sequence(1, 5)}">
+                                <i th:class="${i <= avgRating} ? 'fa-solid fa-star' : (${i - 0.5 <= avgRating} ? 'fa-solid fa-star-half-stroke' : 'fa-regular fa-star')"></i>
+                            </span>
+                            <span style="font-weight:700; color:var(--text-primary); font-size:0.95rem; margin-left:0.25rem;" th:text="${avgRating} + ' / 5'">4.5 / 5</span>
+                        </div>
+                        <div style="font-size:0.85rem; color:var(--text-secondary);" th:text="'Based on ' + ${reviewCount} + ' review' + (${reviewCount > 1} ? 's' : '')">Based on 1 review</div>
+                    </div>
+                </div>
+
+                <div th:if="${reviewCount == 0}" style="color:var(--text-secondary); font-size:0.95rem;">
+                    Average Rating: <span style="color:var(--text-muted);">No ratings yet</span>
+                </div>
+            </div>
+
+            <!-- Action button to write a review -->
+            <div th:if="${session.userId != null and session.userRole != 'ADMIN' and canReview and !hasReviewed}">
+                <button type="button" class="btn-primary" onclick="document.getElementById('writeReviewCard').scrollIntoView({behavior:'smooth'});" style="display:inline-flex; align-items:center; gap:0.45rem;">
+                    <i class="fa-solid fa-pen-nib"></i> Write a Review
+                </button>
+            </div>
+        </div>
+
+        <!-- Empty state when no reviews -->
+        <div th:if="${#lists.isEmpty(reviews)}" style="padding:3.5rem 2rem; text-align:center; color:var(--text-muted); background:rgba(17,17,17,0.90); border-radius:var(--radius-md); border:1px dashed rgba(249,115,22,0.22); margin-bottom:1.5rem;">
+            <i class="fa-regular fa-comment-dots" style="font-size:2.5rem; margin-bottom:0.75rem; display:block; color:var(--text-muted);"></i>
+            <h4 style="font-size:1.15rem; font-weight:700; color:var(--text-primary); margin-bottom:0.35rem;">No reviews yet.</h4>
+            <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:0;">Be the first to share your experience with this album.</p>
+        </div>
+
+        <!-- List of past reviews -->
+        <div th:unless="${#lists.isEmpty(reviews)}" style="display:flex; flex-direction:column; gap:1.25rem; margin-bottom:2rem;">
+            <div th:each="r : ${reviews}" 
+                 style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1.5rem; box-shadow:0 2px 12px rgba(0,0,0,0.3); transition:var(--transition);"
+                 th:styleappend="${session.userId != null and session.userId == r.listenerId} ? 'border-color:rgba(249,115,22,0.45); background:rgba(249,115,22,0.06);' : ''">
+                
+                <!-- Review Card Top Row -->
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
+                    <div style="display:flex; align-items:center; gap:0.75rem;">
+                        <div style="width:40px; height:40px; border-radius:50%; background:var(--brand-primary-light, #e0e7ff); color:var(--brand-primary, #2563eb); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:1rem;">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                        <div>
+                            <div style="font-weight:700; color:var(--text-primary); font-size:1rem; display:flex; align-items:center; gap:0.5rem;">
+                                <span th:text="${r.displayName}">Listener Name</span>
+                                <span th:if="${session.userId != null and session.userId == r.listenerId}" 
+                                      class="chip chip-blue" style="font-size:0.72rem; padding:0.15rem 0.5rem;">
+                                    <i class="fa-solid fa-check"></i> Your Review
+                                </span>
+                            </div>
+                            <div style="font-size:0.8rem; color:var(--text-muted); margin-top:0.15rem;"
+                                 th:text="${r.reviewDate != null ? r.reviewDate.toString().substring(0, 10) : ''}">2026-08-20</div>
+                        </div>
+                    </div>
+
+                    <!-- Star rating badge -->
+                    <div style="color:#f59e0b; font-size:1.05rem; display:flex; align-items:center; gap:0.35rem; background:var(--bg-subtle); padding:0.35rem 0.75rem; border-radius:var(--radius-full); border:1px solid var(--border-subtle);">
+                        <span th:each="star : ${#numbers.sequence(1, 5)}">
+                            <i th:class="${star <= r.rating} ? 'fa-solid fa-star' : 'fa-regular fa-star'"></i>
+                        </span>
+                        <span style="font-weight:700; margin-left:0.25rem; font-size:0.88rem; color:var(--text-primary);" th:text="${r.rating} + '.0'">5.0</span>
+                    </div>
+                </div>
+
+                <!-- Review text (Full text - not truncated) -->
+                <div style="color:var(--text-primary); font-size:0.95rem; line-height:1.7; white-space:pre-wrap; margin-top:0.5rem; background:rgba(255,255,255,0.04); padding:1rem 1.25rem; border-radius:var(--radius-sm); border:1px solid rgba(255,255,255,0.08);"
+                     th:text="${r.comment != null and !r.comment.isEmpty() ? r.comment : 'No written comment.'}">
+                    Review text...
+                </div>
+
+                <!-- Own Review Management Toolbar -->
+                <div th:if="${session.userId != null and session.userId == r.listenerId}" 
+                     style="display:flex; justify-content:flex-end; align-items:center; gap:0.5rem; margin-top:0.75rem; padding-top:0.75rem; border-top:1px dashed var(--border-color);">
+                    <button type="button" class="btn-secondary" style="padding:0.3rem 0.75rem; font-size:0.8rem;" 
+                            th:attr="onclick='toggleEditReviewForm(' + ${r.reviewId} + ')'">
+                        <i class="fa-solid fa-pen"></i> Edit Review
+                    </button>
+                    <form th:action="@{'/albums/' + ${album.albumId} + '/reviews/' + ${r.reviewId} + '/delete'}" method="post" style="display:inline;"
+                          onsubmit="return confirm('Are you sure you want to delete your review?');">
+                        <button type="submit" class="btn-secondary" style="padding:0.3rem 0.75rem; font-size:0.8rem; color:#ef4444; border-color:#fca5a5;">
+                            <i class="fa-solid fa-trash"></i> Delete
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Inline Edit Form for Own Review (Initially Hidden) -->
+                <div th:if="${session.userId != null and session.userId == r.listenerId}" 
+                     th:id="'editReviewForm-' + ${r.reviewId}"
+                     style="display:none; margin-top:1rem; padding:1.25rem; background:var(--bg-card); border:1px solid var(--brand-primary); border-radius:var(--radius-md);">
+                    <h5 style="font-weight:700; margin-bottom:0.75rem; color:var(--text-primary);">Edit Your Review</h5>
+                    <form th:action="@{'/albums/' + ${album.albumId} + '/reviews/' + ${r.reviewId} + '/edit'}" method="post">
+                        <div class="form-group" style="margin-bottom:0.75rem;">
+                            <label class="form-label" style="font-size:0.85rem; font-weight:600;">Rating</label>
+                            <select name="rating" class="form-control select-control" style="max-width:240px;" required>
+                                <option value="5" th:selected="${r.rating == 5}">★★★★★ (5 Stars - Outstanding)</option>
+                                <option value="4" th:selected="${r.rating == 4}">★★★★☆ (4 Stars - Very Good)</option>
+                                <option value="3" th:selected="${r.rating == 3}">★★★☆☆ (3 Stars - Average)</option>
+                                <option value="2" th:selected="${r.rating == 2}">★★☆☆☆ (2 Stars - Below Average)</option>
+                                <option value="1" th:selected="${r.rating == 1}">★☆☆☆☆ (1 Star - Poor)</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom:1rem;">
+                            <label class="form-label" style="font-size:0.85rem; font-weight:600;">Review</label>
+                            <textarea name="comment" class="form-control" rows="4" required style="resize:vertical;" th:text="${r.comment}"></textarea>
+                        </div>
+                        <div style="display:flex; gap:0.5rem;">
+                            <button type="submit" class="btn-primary" style="padding:0.4rem 1rem; font-size:0.85rem;">
+                                <i class="fa-solid fa-save"></i> Save Changes
+                            </button>
+                            <button type="button" class="btn-secondary" style="padding:0.4rem 1rem; font-size:0.85rem;"
+                                    th:attr="onclick='toggleEditReviewForm(' + ${r.reviewId} + ')'">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Write a Review Form Card (if logged in listener has purchased and not yet reviewed) -->
+        <div id="writeReviewCard" th:if="${session.userId != null and session.userRole != 'ADMIN' and !hasReviewed and canReview}" 
+             style="padding:1.75rem; margin-top:1.5rem;">
+            <h4 style="font-size:1.15rem; font-weight:700; color:var(--text-primary); margin-bottom:0.5rem; display:flex; align-items:center; gap:0.5rem;">
+                <i class="fa-solid fa-pen-nib" style="color:var(--brand-primary);"></i> Write a Review
+            </h4>
+            <p style="font-size:0.88rem; color:var(--text-secondary); margin-bottom:1.25rem;">Share your feedback with other music lovers.</p>
+
+            <form th:action="@{/albums/{id}/reviews(id=${album.albumId})}" method="post">
+                <div class="form-group" style="margin-bottom:1rem;">
+                    <label class="form-label" style="display:block; font-size:0.88rem; font-weight:600; color:var(--text-primary); margin-bottom:0.4rem;">
+                        Rating <span style="color:var(--error);">*</span>
+                    </label>
+                    <select name="rating" class="form-control select-control" style="max-width:280px;" required>
+                        <option value="5" selected>★★★★★ (5 Stars - Outstanding)</option>
+                        <option value="4">★★★★☆ (4 Stars - Very Good)</option>
+                        <option value="3">★★★☆☆ (3 Stars - Average)</option>
+                        <option value="2">★★☆☆☆ (2 Stars - Below Average)</option>
+                        <option value="1">★☆☆☆☆ (1 Star - Poor)</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom:1.25rem;">
+                    <label class="form-label" style="display:block; font-size:0.88rem; font-weight:600; color:var(--text-primary); margin-bottom:0.4rem;">
+                        Review <span style="color:var(--error);">*</span>
+                    </label>
+                    <textarea name="comment" class="form-control" rows="4" placeholder="Share your experience listening to this album..." required style="min-height:90px; resize:vertical;"></textarea>
+                </div>
+                <button type="submit" class="btn-primary" style="padding:0.65rem 1.5rem; font-weight:600;">
+                    <i class="fa-solid fa-paper-plane"></i> Submit Review
+                </button>
+            </form>
+        </div>
+
+        <!-- Info message if user already reviewed -->
+        <div th:if="${session.userId != null and session.userRole != 'ADMIN' and hasReviewed}" 
+             style="margin-top:1.25rem; font-size:0.88rem; color:var(--text-secondary); background:var(--bg-subtle); padding:0.9rem 1.25rem; border-radius:var(--radius-md); border:1px solid var(--border-color); display:flex; align-items:center; gap:0.5rem;">
+            <i class="fa-solid fa-circle-check" style="color:var(--success);"></i>
+            <span>You have submitted a review for this album. You can manage your reviews anytime in <a th:href="@{/my-reviews}" style="color:var(--brand-primary); text-decoration:none; font-weight:600;">My Reviews</a>.</span>
+        </div>
+
+    </div>
+
+    <script>
+    function toggleEditReviewForm(reviewId) {
+        var form = document.getElementById('editReviewForm-' + reviewId);
+        if (form) {
+            form.style.display = (form.style.display === 'none' || form.style.display === '') ? 'block' : 'none';
+        }
+    }
+    </script>
+    </div>
+
+</main>
+
+<footer class="footer">
+    <p>&copy; 2026 MelodyMart Digital Music Store &mdash; All rights reserved.</p>
+</footer>
+
+</body>
+</html>

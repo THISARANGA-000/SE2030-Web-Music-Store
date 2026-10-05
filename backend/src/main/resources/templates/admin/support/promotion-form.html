@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${formMode == 'edit'} ? 'Edit Promotion | MelodyMart Admin' : 'Add Promotion | MelodyMart Admin'">Promotion Form</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+<div class="admin-layout">
+    <div th:replace="~{admin/fragments/sidebar :: sidebar(activeItem='promotions')}"></div>
+    <div class="admin-content">
+        <div class="admin-topbar">
+            <nav class="admin-breadcrumb">
+                <a th:href="@{/admin/dashboard}">Dashboard</a>
+                <span class="admin-breadcrumb-sep">/</span>
+                <a th:href="@{/admin/promotions}">Promotions</a>
+                <span class="admin-breadcrumb-sep">/</span>
+                <span class="admin-breadcrumb-current" th:text="${formMode == 'edit'} ? 'Edit Promotion' : 'Add Promotion'">Form</span>
+            </nav>
+            <div class="admin-topbar-right">
+                <a th:href="@{/admin/promotions}" class="btn-secondary" style="font-size:0.8rem;padding:0.45rem 0.9rem;">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Promotions
+                </a>
+            </div>
+        </div>
+
+        <main class="admin-main">
+            <div class="admin-page-header">
+                <div>
+                    <h1 class="admin-page-title">
+                        <i class="fa-solid fa-percent" style="color:var(--brand-secondary);"></i>
+                        <span th:text="${formMode == 'edit'} ? 'Edit Promotion #' + ${promo[0]} : 'Add New Promotion'">Promotion Form</span>
+                    </h1>
+                    <p class="admin-page-subtitle" th:text="${formMode == 'edit'} ? 'Update promotion details and dates.' : 'Create a new discount promotion for your catalog.'">Form</p>
+                </div>
+            </div>
+
+            <div th:if="${errorMsg}" class="alert alert-error" style="margin-bottom:1.5rem;">
+                <i class="fa-solid fa-circle-xmark"></i> <span th:text="${errorMsg}"></span>
+            </div>
+
+            <div class="admin-form-card" style="max-width:700px;">
+                <form th:action="${formMode == 'edit'} ? @{/admin/promotions/edit/{id}(id=${promo[0]})} : @{/admin/promotions/add}" method="post" id="promoForm">
+                    <div style="display:grid;gap:1.25rem;">
+
+                        <div class="form-group">
+                            <label class="form-label" for="promotionName">
+                                <i class="fa-solid fa-tag"></i> Promotion Name <span style="color:var(--error);">*</span>
+                            </label>
+                            <input id="promotionName" name="promotionName" type="text" class="form-input"
+                                   th:value="${promo != null ? promo[1] : ''}"
+                                   placeholder="e.g. Summer Rock Sale 20% Off" required maxlength="100">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="description">
+                                <i class="fa-solid fa-align-left"></i> Description
+                            </label>
+                            <textarea id="description" name="description" class="form-input" rows="3"
+                                      placeholder="Optional description of the promotion campaign..."
+                                      style="resize:vertical;"
+                                      th:text="${promo != null ? (promo[2] != null ? promo[2] : '') : ''}"></textarea>
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                            <div class="form-group">
+                                <label class="form-label" for="discountType">
+                                    <i class="fa-solid fa-sliders"></i> Discount Type <span style="color:var(--error);">*</span>
+                                </label>
+                                <select id="discountType" name="discountType" class="form-input" required>
+                                    <option value="">— Select type —</option>
+                                    <option value="Percentage"   th:selected="${promo != null && 'Percentage'.equals(promo[3])}">Percentage (%)</option>
+                                    <option value="FixedAmount"  th:selected="${promo != null && 'FixedAmount'.equals(promo[3])}">Fixed Amount ($)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="discountValue">
+                                    <i class="fa-solid fa-dollar-sign"></i> Discount Value <span style="color:var(--error);">*</span>
+                                </label>
+                                <input id="discountValue" name="discountValue" type="number" class="form-input"
+                                       th:value="${promo != null ? promo[4] : ''}"
+                                       placeholder="e.g. 20" min="0.01" step="0.01" required>
+                                <small style="color:var(--text-muted);font-size:0.75rem;">Greater than 0. Percentage (e.g. 20) or Dollar amount (e.g. 5.00).</small>
+                            </div>
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                            <div class="form-group">
+                                <label class="form-label" for="startDate">
+                                    <i class="fa-solid fa-calendar-day"></i> Start Date &amp; Time <span style="color:var(--error);">*</span>
+                                </label>
+                                <input id="startDate" name="startDate" type="datetime-local" class="form-input"
+                                       th:value="${promo != null && promo[5] != null ? #strings.replace(#strings.substring(promo[5].toString(), 0, 16), ' ', 'T') : ''}"
+                                       required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="endDate">
+                                    <i class="fa-solid fa-calendar-xmark"></i> End Date &amp; Time <span style="color:var(--error);">*</span>
+                                </label>
+                                <input id="endDate" name="endDate" type="datetime-local" class="form-input"
+                                       th:value="${promo != null && promo[6] != null ? #strings.replace(#strings.substring(promo[6].toString(), 0, 16), ' ', 'T') : ''}"
+                                       required>
+                                <small style="color:var(--text-muted);font-size:0.75rem;">End date must be on or after start date.</small>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="promotionStatus">
+                                <i class="fa-solid fa-toggle-on"></i> Status <span style="color:var(--error);">*</span>
+                            </label>
+                            <select id="promotionStatus" name="promotionStatus" class="form-input" required>
+                                <option value="Active"    th:selected="${promo != null && 'Active'.equals(promo[7])}">Active</option>
+                                <option value="Scheduled" th:selected="${promo != null && 'Scheduled'.equals(promo[7])}">Scheduled</option>
+                                <option value="Expired"   th:selected="${promo != null && 'Expired'.equals(promo[7])}">Expired</option>
+                                <option value="Cancelled" th:selected="${promo != null && 'Cancelled'.equals(promo[7])}">Cancelled</option>
+                            </select>
+                        </div>
+
+                        <div style="display:flex;gap:0.75rem;justify-content:flex-end;padding-top:0.75rem;border-top:1px solid var(--border-color);">
+                            <a th:href="@{/admin/promotions}" class="btn-secondary">
+                                <i class="fa-solid fa-arrow-left"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn-primary" id="submitPromoBtn">
+                                <i class="fa-solid fa-floppy-disk"></i>
+                                <span th:text="${promo != null} ? 'Update Promotion' : 'Create Promotion'">Save</span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('promoForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const start = document.getElementById('startDate').value;
+            const end = document.getElementById('endDate').value;
+            if (start && end && end < start) {
+                e.preventDefault();
+                alert('End date must be on or after start date.');
+                return false;
+            }
+        });
+    }
+});
+</script>
+</body>
+</html>
