@@ -65,14 +65,13 @@
                 <div style="overflow-x:auto;">
                     <table class="admin-table" id="ordersTable">
                         <thead>
-                            <tr><th>Order ID</th><th>Customer</th><th>Email</th><th>Date</th><th>Status</th><th>Total</th><th>Actions</th></tr>
+                            <tr><th>Customer</th><th>Email</th><th>Date</th><th>Status</th><th>Total</th><th>Actions</th></tr>
                         </thead>
                         <tbody>
                             <tr th:if="${orders.isEmpty()}">
-                                <td colspan="7" style="text-align:center;padding:3rem;color:var(--text-muted);">No orders found.</td>
+                                <td colspan="6" style="text-align:center;padding:3rem;color:var(--text-muted);">No orders found.</td>
                             </tr>
                             <tr th:each="o : ${orders}">
-                                <td><strong th:text="'#' + o[0]">#1</strong></td>
                                 <td th:text="${o[1]}">Customer</td>
                                 <td th:text="${o[2]}">email</td>
                                 <td th:text="${o[3] != null ? o[3].toString().substring(0,10) : '—'}">—</td>

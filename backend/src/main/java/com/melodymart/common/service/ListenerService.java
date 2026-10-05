@@ -8,6 +8,8 @@ import com.melodymart.ordersales.model.Cart;
 import com.melodymart.albumcatalog.model.Album;
 import com.melodymart.albumcatalog.repository.CatalogRepository;
 import com.melodymart.artistgenretrack.model.Artist;
+import com.melodymart.ordersales.payment.PaymentProcessor;
+import com.melodymart.ordersales.payment.PaymentProcessorFactory;
 
 import com.melodymart.albumcatalog.model.Album;
 import com.melodymart.ordersales.model.Cart;
@@ -15,6 +17,7 @@ import com.melodymart.ordersales.model.CartItem;
 import com.melodymart.albumcatalog.model.Catalog;
 import com.melodymart.albumcatalog.repository.AlbumRepository;
 import com.melodymart.albumcatalog.repository.CatalogRepository;
+import com.melodymart.faqpromotion.service.PromotionService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +33,9 @@ public class ListenerService {
     private final CatalogRepository catalogRepository;
     private final AlbumRepository albumRepository;
     private final CartService cartService;
+    private final PromotionService promotionService;
+    // Factory Method Pattern — injected factory for payment processor creation
+    private final PaymentProcessorFactory paymentProcessorFactory;
 
     @PersistenceContext
     private EntityManager em;
@@ -37,10 +43,14 @@ public class ListenerService {
     @Autowired
     public ListenerService(CatalogRepository catalogRepository,
                            AlbumRepository albumRepository,
-                           CartService cartService) {
+                           CartService cartService,
+                           PromotionService promotionService,
+                           PaymentProcessorFactory paymentProcessorFactory) {
         this.catalogRepository = catalogRepository;
         this.albumRepository = albumRepository;
         this.cartService = cartService;
+        this.promotionService = promotionService;
+        this.paymentProcessorFactory = paymentProcessorFactory;
     }
 
     // ─── Catalogs ─────────────────────────────────────────────────────────────
@@ -60,7 +70,9 @@ public class ListenerService {
 
     @Transactional(readOnly = true)
     public List<Album> getAlbumsForCatalog(Integer catalogId) {
-        return albumRepository.findByCatalog_CatalogId(catalogId);
+        List<Album> albums = albumRepository.findByCatalog_CatalogId(catalogId);
+        promotionService.applyActivePromotions(albums);
+        return albums;
     }
 
     // ─── Search ───────────────────────────────────────────────────────────────
@@ -79,6 +91,7 @@ public class ListenerService {
 
         // Search albums by title or artist
         List<Album> albums = albumRepository.searchAndFilterAlbums(q, null, null);
+        promotionService.applyActivePromotions(albums);
 
         // Search catalogs by name or description
         List<Catalog> catalogs = catalogRepository.findByCatalogNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(q, q);
@@ -104,7 +117,9 @@ public class ListenerService {
         }
 
         BigDecimal totalAmount = cart.getTotalAmount();
-        String method = (paymentMethod != null && !paymentMethod.isBlank()) ? paymentMethod : "Demo Payment";
+
+        // Factory Method Pattern — use the factory to obtain the right PaymentProcessor
+        PaymentProcessor processor = paymentProcessorFactory.create(paymentMethod);
 
         // 1. Insert into ORDERS with Pending status
         List<?> orderRes = em.createNativeQuery(
@@ -139,14 +154,14 @@ public class ListenerService {
               .executeUpdate();
         }
 
-        // 3. Insert into PAYMENT (Demo Payment, Completed)
-        String txnRef = "TXN-" + System.currentTimeMillis() + "-" + (int)(Math.random() * 900 + 100);
+        // 3. Insert into PAYMENT — processor provides method name and transaction reference
+        String txnRef = processor.processPayment(orderId, totalAmount);
         em.createNativeQuery(
             "INSERT INTO dbo.[PAYMENT] (OrderID, PaymentDate, Amount, PaymentMethod, TransactionReference, PaymentStatus) " +
             "VALUES (?, GETDATE(), ?, ?, ?, 'Completed')")
           .setParameter(1, orderId)
           .setParameter(2, totalAmount)
-          .setParameter(3, method)
+          .setParameter(3, processor.getMethodName())
           .setParameter(4, txnRef)
           .executeUpdate();
 

@@ -72,13 +72,22 @@
                 </span>
             </div>
 
-            <div class="album-detail-price"
+            <div th:if="${album.hasDiscount()}" style="margin-bottom:0.75rem;">
+                <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+                    <span style="font-size:1.15rem; text-decoration:line-through; color:var(--text-muted);"
+                          th:text="'$' + ${#numbers.formatDecimal(album.price, 1, 2)}">$9.99</span>
+                    <span class="album-detail-price" style="color:var(--success); margin:0;"
+                          th:text="'$' + ${#numbers.formatDecimal(album.discountedPrice, 1, 2)}">$7.99</span>
+                    <span th:if="${album.discountLabel != null}" style="font-size:0.8rem; font-weight:700; background:#E8F5E9; color:#2E7D32; padding:0.2rem 0.5rem; border-radius:4px;"
+                          th:text="${album.discountLabel}">20% OFF</span>
+                </div>
+            </div>
+            <div th:unless="${album.hasDiscount()}" class="album-detail-price"
                  th:text="'$' + ${#numbers.formatDecimal(album.price, 1, 2)}">$9.99</div>
 
             <!-- Active Promotional Offers -->
             <div th:if="${activePromotions != null and !activePromotions.isEmpty()}" style="margin: 0 0 1.25rem 0;">
-                <div th:each="promo : ${activePromotions}"
-                     style="display:inline-flex; align-items:center; gap:0.5rem; background:#ecfdf5; border:1px solid #a7f3d0; color:#059669; padding:0.35rem 0.75rem; border-radius:var(--radius-sm); font-size:0.85rem; font-weight:700; margin-right:0.5rem; margin-bottom:0.5rem;">
+                <div th:each="promo : ${activePromotions}" class="promo-offer-badge">
                     <i class="fa-solid fa-tag"></i>
                     <span th:text="${promo[1]}">Special Offer</span>:
                     <span th:if="${'Percentage'.equals(promo[2])}" th:text="${promo[3]} + '% OFF'">10% OFF</span>
@@ -88,14 +97,14 @@
 
             <p class="album-description" th:text="${album.description}">Description</p>
 
-            <div style="display:flex; gap:0.75rem; flex-wrap:wrap; align-items:center;">
-                <form th:action="@{/cart/add}" method="post" style="display:inline-flex;">
+            <div class="album-hero-actions">
+                <form th:action="@{/cart/add}" method="post">
                     <input type="hidden" name="albumId" th:value="${album.albumId}">
-                    <button type="submit" class="btn-primary" id="addToCartBtn" style="padding:0.7rem 1.4rem; font-size:0.95rem;">
+                    <button type="submit" class="btn-primary" id="addToCartBtn">
                         <i class="fa-solid fa-cart-plus"></i> Add to Cart
                     </button>
                 </form>
-                <a th:href="@{/albums}" class="btn-secondary" style="padding:0.7rem 1.2rem;">
+                <a th:href="@{/albums}" class="btn-secondary">
                     <i class="fa-solid fa-arrow-left"></i> Browse Catalog
                 </a>
             </div>
@@ -148,7 +157,7 @@
     </div>
 
     <!-- Customer Reviews Section -->
-    <div class="info-section" id="reviews" style="margin-top:2rem; background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-lg); padding:2rem;">
+    <div class="info-section reviews-section" id="reviews" style="margin-top:2rem; background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-lg); padding:2rem;">
         
         <!-- Header & Average Rating Banner -->
         <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.5rem; border-bottom:1px solid var(--border-color); padding-bottom:1.5rem; flex-wrap:wrap; gap:1.25rem;">
@@ -184,7 +193,7 @@
         </div>
 
         <!-- Empty state when no reviews -->
-        <div th:if="${#lists.isEmpty(reviews)}" style="padding:3.5rem 2rem; text-align:center; color:var(--text-muted); background:var(--bg-subtle, #f9fafb); border-radius:var(--radius-md, 8px); border:1px dashed var(--border-color); margin-bottom:1.5rem;">
+        <div th:if="${#lists.isEmpty(reviews)}" style="padding:3.5rem 2rem; text-align:center; color:var(--text-muted); background:rgba(17,17,17,0.90); border-radius:var(--radius-md); border:1px dashed rgba(249,115,22,0.22); margin-bottom:1.5rem;">
             <i class="fa-regular fa-comment-dots" style="font-size:2.5rem; margin-bottom:0.75rem; display:block; color:var(--text-muted);"></i>
             <h4 style="font-size:1.15rem; font-weight:700; color:var(--text-primary); margin-bottom:0.35rem;">No reviews yet.</h4>
             <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:0;">Be the first to share your experience with this album.</p>
@@ -193,8 +202,8 @@
         <!-- List of past reviews -->
         <div th:unless="${#lists.isEmpty(reviews)}" style="display:flex; flex-direction:column; gap:1.25rem; margin-bottom:2rem;">
             <div th:each="r : ${reviews}" 
-                 style="background:var(--bg-surface, #ffffff); border:1px solid var(--border-color); border-radius:var(--radius-md, 8px); padding:1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.04); transition:var(--transition);"
-                 th:styleappend="${session.userId != null and session.userId == r.listenerId} ? 'border-color:var(--brand-primary); background:#f8faff;' : ''">
+                 style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1.5rem; box-shadow:0 2px 12px rgba(0,0,0,0.3); transition:var(--transition);"
+                 th:styleappend="${session.userId != null and session.userId == r.listenerId} ? 'border-color:rgba(249,115,22,0.45); background:rgba(249,115,22,0.06);' : ''">
                 
                 <!-- Review Card Top Row -->
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
@@ -225,7 +234,7 @@
                 </div>
 
                 <!-- Review text (Full text - not truncated) -->
-                <div style="color:var(--text-primary); font-size:0.95rem; line-height:1.7; white-space:pre-wrap; margin-top:0.5rem; background:var(--bg-subtle, #f9fafb); padding:1rem 1.25rem; border-radius:var(--radius-sm); border:1px solid var(--border-subtle);"
+                <div style="color:var(--text-primary); font-size:0.95rem; line-height:1.7; white-space:pre-wrap; margin-top:0.5rem; background:rgba(255,255,255,0.04); padding:1rem 1.25rem; border-radius:var(--radius-sm); border:1px solid rgba(255,255,255,0.08);"
                      th:text="${r.comment != null and !r.comment.isEmpty() ? r.comment : 'No written comment.'}">
                     Review text...
                 </div>
@@ -280,7 +289,7 @@
 
         <!-- Write a Review Form Card (if logged in listener has purchased and not yet reviewed) -->
         <div id="writeReviewCard" th:if="${session.userId != null and session.userRole != 'ADMIN' and !hasReviewed and canReview}" 
-             style="background:var(--bg-subtle, #f9fafb); border:1px solid var(--border-color); border-radius:var(--radius-md, 8px); padding:1.75rem; margin-top:1.5rem;">
+             style="padding:1.75rem; margin-top:1.5rem;">
             <h4 style="font-size:1.15rem; font-weight:700; color:var(--text-primary); margin-bottom:0.5rem; display:flex; align-items:center; gap:0.5rem;">
                 <i class="fa-solid fa-pen-nib" style="color:var(--brand-primary);"></i> Write a Review
             </h4>

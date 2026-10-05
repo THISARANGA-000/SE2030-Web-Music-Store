@@ -50,20 +50,45 @@
                      th:text="${complaint[2]}">Description content...</div>
             </div>
 
-            <!-- Admin Response Card -->
+            <!-- Support Response Card -->
             <div class="card" style="padding:1.75rem;">
-                <h3 style="font-size:1.1rem; font-weight:700; color:var(--text-primary); margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
-                    <i class="fa-solid fa-headset" style="color:var(--brand-primary);"></i> Support Response
-                </h3>
-                <div th:if="${complaint[5] != null and !complaint[5].toString().isEmpty()}"
-                     style="color:var(--text-primary); line-height:1.75; white-space:pre-wrap; font-size:0.95rem; background:#f0fdf4; border:1px solid #bbf7d0; padding:1.25rem; border-radius:var(--radius-md);"
-                     th:text="${complaint[5]}">
-                    Support response content...
+                <div class="support-response-card-header">
+                    <h3 class="support-response-card-title">
+                        <i class="fa-solid fa-headset" style="color:var(--brand-primary);"></i> Current Support Response
+                    </h3>
+                    <span th:if="${complaint[5] != null and !complaint[5].toString().trim().isEmpty()}"
+                          class="support-response-pill-active">
+                        <i class="fa-solid fa-circle-check"></i> Official Reply
+                    </span>
+                    <span th:unless="${complaint[5] != null and !complaint[5].toString().trim().isEmpty()}"
+                          class="support-response-pill-pending">
+                        <i class="fa-regular fa-clock"></i> Under Review
+                    </span>
                 </div>
-                <div th:unless="${complaint[5] != null and !complaint[5].toString().isEmpty()}"
-                     style="color:var(--text-muted); font-size:0.92rem; padding:1.5rem; background:var(--bg-subtle, #f9fafb); border-radius:var(--radius-md); border:1px dashed var(--border-color); display:flex; align-items:center; gap:0.6rem;">
-                    <i class="fa-regular fa-clock" style="font-size:1.1rem; color:var(--text-muted);"></i>
-                    <span>Your complaint has not received a response yet.</span>
+
+                <!-- If response exists -->
+                <div th:if="${complaint[5] != null and !complaint[5].toString().trim().isEmpty()}"
+                     class="support-response-box support-response-active">
+                    <div class="support-response-meta-row" th:if="${complaint[6] != null and !complaint[6].toString().isEmpty()}">
+                        <span class="support-response-timestamp">
+                            <i class="fa-regular fa-calendar-check"></i> Resolved Date: <strong th:text="${complaint[6].toString().substring(0, 16)}">2026-08-22 14:00</strong>
+                        </span>
+                    </div>
+                    <div class="support-response-content" th:text="${complaint[5]}">
+                        Support response content...
+                    </div>
+                </div>
+
+                <!-- If no response yet -->
+                <div th:unless="${complaint[5] != null and !complaint[5].toString().trim().isEmpty()}"
+                     class="support-response-box support-response-empty">
+                    <div class="support-response-empty-icon">
+                        <i class="fa-regular fa-clock"></i>
+                    </div>
+                    <div class="support-response-empty-text">
+                        <strong>No response has been added yet.</strong>
+                        <p>Our support team has received your complaint and is actively reviewing it. Updates will appear here.</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -80,16 +105,16 @@
             </div>
 
             <div>
-                <div style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-muted); margin-bottom:0.25rem; font-weight:600;">Status</div>
+                <div style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-muted); margin-bottom:0.4rem; font-weight:600;">Status</div>
                 <div>
                     <span th:switch="${complaint[4]}">
-                        <span th:case="'Open'"        class="chip chip-red"><i class="fa-solid fa-clock"></i> Pending</span>
-                        <span th:case="'Pending'"     class="chip chip-yellow"><i class="fa-solid fa-clock"></i> Pending</span>
-                        <span th:case="'In Progress'" class="chip chip-yellow"><i class="fa-solid fa-spinner"></i> In Progress</span>
-                        <span th:case="'InProgress'"  class="chip chip-yellow"><i class="fa-solid fa-spinner"></i> In Progress</span>
-                        <span th:case="'Resolved'"    class="chip chip-green"><i class="fa-solid fa-circle-check"></i> Resolved</span>
-                        <span th:case="'Closed'"      class="chip chip-gray"><i class="fa-solid fa-lock"></i> Closed</span>
-                        <span th:case="*"             class="chip chip-gray" th:text="${complaint[4]}"></span>
+                        <span th:case="'Open'"        class="status-chip status-pending"><i class="fa-solid fa-clock"></i> Pending / Open</span>
+                        <span th:case="'Pending'"     class="status-chip status-pending"><i class="fa-solid fa-clock"></i> Pending</span>
+                        <span th:case="'In Progress'" class="status-chip status-inprogress"><i class="fa-solid fa-arrows-rotate fa-spin-pulse" style="--fa-animation-duration:3s;"></i> In Progress</span>
+                        <span th:case="'InProgress'"  class="status-chip status-inprogress"><i class="fa-solid fa-arrows-rotate fa-spin-pulse" style="--fa-animation-duration:3s;"></i> In Progress</span>
+                        <span th:case="'Resolved'"    class="status-chip status-resolved"><i class="fa-solid fa-circle-check"></i> Resolved</span>
+                        <span th:case="'Closed'"      class="status-chip status-closed"><i class="fa-solid fa-lock"></i> Closed</span>
+                        <span th:case="*"             class="status-chip status-closed" th:text="${complaint[4]}"></span>
                     </span>
                 </div>
             </div>

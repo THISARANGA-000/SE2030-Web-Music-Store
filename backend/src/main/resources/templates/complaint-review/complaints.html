@@ -73,13 +73,13 @@
                         <td th:text="${c[3] != null ? c[3].toString().substring(0,10) : '—'}">Date</td>
                         <td>
                             <span th:switch="${c[4]}">
-                                <span th:case="'Open'"        class="chip chip-red"><i class="fa-solid fa-clock"></i> Pending</span>
-                                <span th:case="'Pending'"     class="chip chip-yellow"><i class="fa-solid fa-clock"></i> Pending</span>
-                                <span th:case="'In Progress'" class="chip chip-yellow"><i class="fa-solid fa-spinner"></i> In Progress</span>
-                                <span th:case="'InProgress'"  class="chip chip-yellow"><i class="fa-solid fa-spinner"></i> In Progress</span>
-                                <span th:case="'Resolved'"    class="chip chip-green"><i class="fa-solid fa-circle-check"></i> Resolved</span>
-                                <span th:case="'Closed'"      class="chip chip-gray"><i class="fa-solid fa-lock"></i> Closed</span>
-                                <span th:case="*"             class="chip chip-gray" th:text="${c[4]}"></span>
+                                <span th:case="'Open'"        class="status-chip status-pending"><i class="fa-solid fa-clock"></i> Pending</span>
+                                <span th:case="'Pending'"     class="status-chip status-pending"><i class="fa-solid fa-clock"></i> Pending</span>
+                                <span th:case="'In Progress'" class="status-chip status-inprogress"><i class="fa-solid fa-arrows-rotate fa-spin-pulse" style="--fa-animation-duration:3s;"></i> In Progress</span>
+                                <span th:case="'InProgress'"  class="status-chip status-inprogress"><i class="fa-solid fa-arrows-rotate fa-spin-pulse" style="--fa-animation-duration:3s;"></i> In Progress</span>
+                                <span th:case="'Resolved'"    class="status-chip status-resolved"><i class="fa-solid fa-circle-check"></i> Resolved</span>
+                                <span th:case="'Closed'"      class="status-chip status-closed"><i class="fa-solid fa-lock"></i> Closed</span>
+                                <span th:case="*"             class="status-chip status-closed" th:text="${c[4]}"></span>
                             </span>
                         </td>
                         <td>

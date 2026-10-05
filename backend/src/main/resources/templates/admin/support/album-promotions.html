@@ -43,7 +43,6 @@
                             <tr>
                                 <th style="width:80px;">Album ID</th>
                                 <th>Album Title</th>
-                                <th style="width:90px;">Promo ID</th>
                                 <th>Promotion Name</th>
                                 <th>Discount</th>
                                 <th>Status</th>
@@ -52,12 +51,11 @@
                         </thead>
                         <tbody>
                             <tr th:if="${albumPromotions.isEmpty()}">
-                                <td colspan="7" style="text-align:center;padding:3rem;color:var(--text-muted);">No promotional albums linked.</td>
+                                <td colspan="6" style="text-align:center;padding:3rem;color:var(--text-muted);">No promotional albums linked.</td>
                             </tr>
                             <tr th:each="ap : ${albumPromotions}">
                                 <td th:text="'#' + ${ap[0]}">#1</td>
                                 <td style="font-weight:600;" th:text="${ap[1]}">Album Title</td>
-                                <td th:text="'#' + ${ap[2]}">#1</td>
                                 <td th:text="${ap[3]}">Promotion Name</td>
                                 <td>
                                     <strong style="color:var(--brand-gold);" th:text="${ap[4] == 'Percentage' ? ap[5] + '%' : '$' + ap[5]}">10%</strong>

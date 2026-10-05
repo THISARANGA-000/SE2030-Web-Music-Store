@@ -99,7 +99,17 @@
                     </p>
                 </div>
                 <div class="card-footer">
-                    <span class="album-price"
+                    <div th:if="${album.hasDiscount()}" style="display:flex; flex-direction:column; gap:0.1rem;">
+                        <div style="display:flex; align-items:center; gap:0.35rem;">
+                            <span style="font-size:0.75rem; text-decoration:line-through; color:var(--text-muted);"
+                                  th:text="'$' + ${#numbers.formatDecimal(album.price, 1, 2)}">$9.99</span>
+                            <span th:if="${album.discountLabel != null}" style="font-size:0.68rem; font-weight:700; background:#E8F5E9; color:#2E7D32; padding:0.1rem 0.35rem; border-radius:4px;"
+                                  th:text="${album.discountLabel}">20% OFF</span>
+                        </div>
+                        <span class="album-price" style="color:var(--success);"
+                              th:text="'$' + ${#numbers.formatDecimal(album.discountedPrice, 1, 2)}">$7.99</span>
+                    </div>
+                    <span th:unless="${album.hasDiscount()}" class="album-price"
                           th:text="'$' + ${#numbers.formatDecimal(album.price, 1, 2)}">$9.99</span>
                     <div style="display:flex; gap:0.4rem; align-items:center;">
                         <a th:href="@{/albums/{id}(id=${album.albumId})}" class="btn-secondary btn-sm">

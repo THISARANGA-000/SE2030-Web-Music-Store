@@ -28,18 +28,18 @@
             </h3>
 
             <form th:action="@{/checkout/confirm}" method="post" id="checkoutForm">
-                <label class="payment-option-label" style="border-color:var(--brand-primary); background:#eff6ff;">
-                    <input type="radio" name="paymentMethod" value="Demo Payment" checked>
-                    <i class="fa-solid fa-circle-check" style="font-size:1.2rem; color:var(--brand-primary);"></i>
+                <label class="payment-option-label" style="border:1.5px solid #D4AF37; background:#FFF7E6; color:#12355B;">
+                    <input type="radio" name="paymentMethod" value="Demo Payment" checked style="accent-color:#8A6500; width:1.15rem; height:1.15rem; cursor:pointer;">
+                    <i class="fa-solid fa-circle-check" style="font-size:1.25rem; color:#8A6500;"></i>
                     <div style="flex:1;">
-                        <strong style="color:var(--text-primary); display:block; font-size:0.95rem;">Demo Simulation Payment</strong>
-                        <span style="font-size:0.825rem; color:var(--text-secondary);">One-click instant demonstration checkout (No external gateway required)</span>
+                        <strong style="color:#12355B; display:block; font-size:0.975rem; font-weight:700; margin-bottom:0.2rem;">Demo Simulation Payment</strong>
+                        <span style="font-size:0.825rem; color:#8A6500; font-weight:500;">One-click instant demonstration checkout (No external gateway required)</span>
                     </div>
                 </label>
 
-                <div style="margin-top:1.5rem; background:#f8f9fb; border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:1rem;">
-                    <div style="display:flex; align-items:center; gap:0.5rem; color:var(--text-secondary); font-size:0.85rem;">
-                        <i class="fa-solid fa-shield-halved" style="color:var(--brand-primary);"></i>
+                <div style="margin-top:1.5rem; background:#FFF7E6; border:1px solid #D4AF37; border-radius:var(--radius-sm); padding:1rem 1.15rem;">
+                    <div style="display:flex; align-items:center; gap:0.5rem; color:#12355B; font-size:0.85rem; font-weight:500;">
+                        <i class="fa-solid fa-shield-halved" style="color:#8A6500; font-size:1rem;"></i>
                         <span>This checkout will generate your order record and submit it for administrator verification.</span>
                     </div>
                 </div>

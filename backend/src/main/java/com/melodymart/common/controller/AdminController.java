@@ -574,6 +574,26 @@ public class AdminController {
         return "admin/orders/payments";
     }
 
+    @GetMapping({"/payments/{id}", "/orders/payments/{id}"})
+    public String paymentDetail(@PathVariable Long id, HttpSession session, Model model) {
+        String r = checkAccess(session, ORDER_ROLES); if (r != null) return r;
+        populateAdminModel(model, session);
+        model.addAttribute("payment", adminService.getPaymentDetail(id));
+        return "admin/orders/payment-detail";
+    }
+
+    @PostMapping({"/payments/{id}/delete", "/orders/payments/{id}/delete"})
+    public String deletePayment(@PathVariable Long id, HttpSession session, RedirectAttributes ra) {
+        String r = checkAccess(session, ORDER_ROLES); if (r != null) return r;
+        try {
+            adminService.deletePayment(id);
+            ra.addFlashAttribute("successMsg", "Payment #" + id + " deleted successfully.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMsg", "Failed to delete payment: " + e.getMessage());
+        }
+        return "redirect:/admin/orders/payments";
+    }
+
     // ─── Digital Library ──────────────────────────────────────────────────────
 
     @GetMapping("/library")
@@ -683,6 +703,20 @@ public class AdminController {
         catch (Exception e) { ra.addFlashAttribute("errorMsg", "Error: " + e.getMessage()); }
         if (returnUrl != null && !returnUrl.isBlank()) {
             return "redirect:" + returnUrl;
+        }
+        return "redirect:/admin/support/complaints";
+    }
+
+    @PostMapping({"/complaints/{id}/delete", "/support/complaints/{id}/delete"})
+    public String deleteComplaint(@PathVariable Long id, HttpSession session, RedirectAttributes ra) {
+        String r = checkAccess(session, SUPPORT_ROLES); if (r != null) return r;
+        try {
+            adminService.deleteComplaint(id);
+            ra.addFlashAttribute("successMsg", "Complaint #" + id + " deleted successfully.");
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("errorMsg", e.getMessage());
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMsg", "Error deleting complaint: " + e.getMessage());
         }
         return "redirect:/admin/support/complaints";
     }

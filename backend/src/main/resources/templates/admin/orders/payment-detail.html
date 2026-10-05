@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Detail | MelodyMart Admin</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+<div class="admin-layout">
+    <div th:replace="~{admin/fragments/sidebar :: sidebar(activeItem='payments')}"></div>
+    <div class="admin-content">
+        <div class="admin-topbar">
+            <nav class="admin-breadcrumb">
+                <a th:href="@{/admin/dashboard}">Dashboard</a>
+                <span class="admin-breadcrumb-sep">/</span>
+                <a th:href="@{/admin/orders/payments}">Payments</a>
+                <span class="admin-breadcrumb-sep">/</span>
+                <span class="admin-breadcrumb-current">Detail</span>
+            </nav>
+        </div>
+        <main class="admin-main">
+            <div class="admin-page-header">
+                <div>
+                    <h1 class="admin-page-title" th:text="${payment != null ? 'Payment #' + payment[0] : 'Payment Detail'}">Payment Detail</h1>
+                    <p class="admin-page-subtitle" th:text="${payment != null ? payment[2] + ' (' + payment[3] + ')' : ''}">Customer</p>
+                </div>
+                <div style="display:flex; gap:0.5rem; align-items:center;">
+                    <!-- Delete Payment Form -->
+                    <form th:if="${payment != null}"
+                          th:action="@{/admin/payments/{id}/delete(id=${payment[0]})}"
+                          method="post" style="display:inline;"
+                          onsubmit="return confirm('Are you sure you want to permanently delete this payment record?');">
+                        <button type="submit" class="btn-danger" style="background:linear-gradient(135deg,#ef4444,#dc2626); border:none; border-radius:var(--radius-sm, 6px); padding:0.6rem 1.2rem; color:#fff; cursor:pointer; font-weight:600;">
+                            <i class="fa-solid fa-trash"></i> Delete Payment
+                        </button>
+                    </form>
+                    <a th:href="@{/admin/orders/payments}" class="btn-secondary"><i class="fa-solid fa-arrow-left"></i> Back</a>
+                </div>
+            </div>
+
+            <div th:if="${successMsg}" class="alert alert-success" style="margin-bottom:1.5rem;"><i class="fa-solid fa-circle-check"></i> <span th:text="${successMsg}"></span></div>
+            <div th:if="${errorMsg}"   class="alert alert-error" style="margin-bottom:1.5rem;"><i class="fa-solid fa-circle-xmark"></i> <span th:text="${errorMsg}"></span></div>
+
+            <div th:if="${payment == null}" class="alert alert-error">Payment record not found.</div>
+
+            <div th:if="${payment != null}">
+                <!-- Payment Information Section -->
+                <div class="info-section" style="margin-bottom:1.5rem;">
+                    <h3><i class="fa-solid fa-credit-card"></i> Payment Information</h3>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;margin-top:0.75rem;">
+                        <div class="profile-field"><div class="profile-field-label">Payment ID</div>
+                            <div class="profile-field-value" th:text="${payment[0]}">—</div></div>
+                        <div class="profile-field"><div class="profile-field-label">Associated Order #</div>
+                            <div class="profile-field-value">
+                                <a th:href="@{/admin/orders/{id}(id=${payment[1]})}" style="color:#F4C542;font-weight:700;" th:text="'#' + payment[1]">#1</a>
+                            </div></div>
+                        <div class="profile-field"><div class="profile-field-label">Amount</div>
+                            <div class="profile-field-value" style="color:var(--brand-gold);font-weight:700;"
+                                 th:text="'$' + ${#numbers.formatDecimal(payment[5],1,2)}">$0.00</div></div>
+                        <div class="profile-field"><div class="profile-field-label">Date</div>
+                            <div class="profile-field-value" th:text="${payment[4] != null ? payment[4].toString().substring(0,10) : '—'}">—</div></div>
+                        <div class="profile-field"><div class="profile-field-label">Payment Method</div>
+                            <div class="profile-field-value" th:text="${payment[6]}">—</div></div>
+                        <div class="profile-field"><div class="profile-field-label">Transaction Reference</div>
+                            <div class="profile-field-value" th:text="${payment[7] != null ? payment[7] : '—'}">—</div></div>
+                        <div class="profile-field"><div class="profile-field-label">Payment Status</div>
+                            <div class="profile-field-value">
+                                <span th:switch="${payment[8]}">
+                                    <span th:case="'Completed'" class="chip chip-green"  th:text="${payment[8]}">—</span>
+                                    <span th:case="'Pending'"   class="chip chip-yellow" th:text="${payment[8]}">—</span>
+                                    <span th:case="'Failed'"    class="chip chip-red"    th:text="${payment[8]}">—</span>
+                                    <span th:case="'Refunded'"  class="chip chip-gray"   th:text="${payment[8]}">—</span>
+                                    <span th:case="*"           class="chip chip-gray"   th:text="${payment[8]}">—</span>
+                                </span>
+                            </div></div>
+                    </div>
+                </div>
+
+                <!-- Customer Information Section -->
+                <div class="info-section" style="margin-bottom:1.5rem;">
+                    <h3><i class="fa-solid fa-user"></i> Customer &amp; Order Overview</h3>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;margin-top:0.75rem;">
+                        <div class="profile-field"><div class="profile-field-label">Customer Name</div>
+                            <div class="profile-field-value" th:text="${payment[2]}">Customer</div></div>
+                        <div class="profile-field"><div class="profile-field-label">Email Address</div>
+                            <div class="profile-field-value" th:text="${payment[3]}">email</div></div>
+                        <div class="profile-field"><div class="profile-field-label">Order Total</div>
+                            <div class="profile-field-value" style="color:var(--brand-gold);font-weight:700;"
+                                 th:text="'$' + ${#numbers.formatDecimal(payment[11],1,2)}">$0.00</div></div>
+                        <div class="profile-field"><div class="profile-field-label">Order Status</div>
+                            <div class="profile-field-value">
+                                <span th:switch="${payment[9]}">
+                                    <span th:case="'Completed'" class="chip chip-green"><i class="fa-solid fa-circle-check"></i> Accepted</span>
+                                    <span th:case="'Pending'"   class="chip chip-yellow"><i class="fa-solid fa-clock"></i> Pending</span>
+                                    <span th:case="'Cancelled'" class="chip chip-red"><i class="fa-solid fa-circle-xmark"></i> Declined</span>
+                                    <span th:case="*"           class="chip chip-gray"   th:text="${payment[9]}">—</span>
+                                </span>
+                            </div></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <footer class="admin-footer">&copy; 2026 MelodyMart &mdash; All rights reserved.</footer>
+    </div>
+</div>
+</body>
+</html>

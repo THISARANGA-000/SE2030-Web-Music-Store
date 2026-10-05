@@ -76,7 +76,6 @@
                     <table class="admin-table" id="promotionsTable">
                         <thead>
                             <tr>
-                                <th style="width:60px;">ID</th>
                                 <th>Name</th>
                                 <th>Type</th>
                                 <th>Value</th>
@@ -88,14 +87,13 @@
                         </thead>
                         <tbody>
                             <tr th:if="${promotions.isEmpty()}">
-                                <td colspan="8" style="text-align:center;padding:3rem;color:var(--text-muted);">
+                                <td colspan="7" style="text-align:center;padding:3rem;color:var(--text-muted);">
                                     <i class="fa-solid fa-percent" style="font-size:2rem;margin-bottom:0.5rem;display:block;"></i>
                                     No promotions found. <a th:href="@{/admin/promotions/add}" style="color:var(--brand-secondary);">Create one now.</a>
                                 </td>
                             </tr>
                             <tr th:each="p : ${promotions}">
                                 <!-- p[0]=PromotionID, p[1]=Name, p[2]=Description, p[3]=DiscountType, p[4]=DiscountValue, p[5]=StartDate, p[6]=EndDate, p[7]=Status -->
-                                <td style="font-weight:600;color:var(--text-muted);" th:text="'#' + p[0]">#1</td>
                                 <td>
                                     <div style="font-weight:600;" th:text="${p[1]}">Name</div>
                                     <div style="font-size:0.75rem;color:var(--text-muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"

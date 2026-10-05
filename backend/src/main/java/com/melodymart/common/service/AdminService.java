@@ -25,12 +25,14 @@ import com.melodymart.common.repository.ListenerRepository;
 import com.melodymart.artistgenretrack.repository.TrackRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Tuple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -76,8 +78,18 @@ public class AdminService {
 
     @SuppressWarnings("unchecked")
     private List<Object[]> nativeList(String sql) {
-        try { return em.createNativeQuery(sql).getResultList(); }
-        catch (Exception e) { return List.of(); }
+        try {
+            List<Tuple> rows = em.createNativeQuery(sql, Tuple.class).getResultList();
+            List<Object[]> result = new ArrayList<>(rows.size());
+            for (Tuple t : rows) { result.add(t.toArray()); }
+            return result;
+        } catch (Exception e) {
+            try {
+                return em.createNativeQuery(sql).getResultList();
+            } catch (Exception ex) {
+                return List.of();
+            }
+        }
     }
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -355,26 +367,40 @@ public class AdminService {
     // ══════════════════════════════════════════════════════════════════════════
 
     @Transactional(readOnly = true)
+    @SuppressWarnings("unchecked")
     public List<Object[]> getAllOrders() {
-        return nativeList(
-            "SELECT o.OrderID, u.FirstName + ' ' + u.LastName AS Customer, u.Email, " +
-            "o.OrderDate, o.OrderStatus, o.TotalAmount " +
-            "FROM dbo.[ORDERS] o " +
-            "JOIN dbo.[LISTENER] l ON o.ListenerID = l.ListenerID " +
-            "JOIN dbo.[USER] u ON l.ListenerID = u.UserID " +
-            "ORDER BY o.OrderDate DESC");
+        try {
+            List<Tuple> rows = em.createNativeQuery(
+                "SELECT o.OrderID, " +
+                "ISNULL(u.FirstName, '') + ' ' + ISNULL(u.LastName, '') AS Customer, u.Email, " +
+                "o.OrderDate, o.OrderStatus, o.TotalAmount " +
+                "FROM dbo.[ORDERS] o " +
+                "JOIN dbo.[LISTENER] l ON o.ListenerID = l.ListenerID " +
+                "JOIN dbo.[USER] u ON l.ListenerID = u.UserID " +
+                "ORDER BY o.OrderDate DESC",
+                Tuple.class).getResultList();
+            List<Object[]> result = new ArrayList<>(rows.size());
+            for (Tuple t : rows) { result.add(t.toArray()); }
+            return result;
+        } catch (Exception e) { return List.of(); }
     }
 
     @Transactional(readOnly = true)
+    @SuppressWarnings("unchecked")
     public Object[] getOrderDetail(Long orderId) {
-        List<Object[]> r = nativeList(
-            "SELECT o.OrderID, u.FirstName + ' ' + u.LastName AS Customer, u.Email, " +
-            "o.OrderDate, o.OrderStatus, o.TotalAmount " +
-            "FROM dbo.[ORDERS] o " +
-            "JOIN dbo.[LISTENER] l ON o.ListenerID = l.ListenerID " +
-            "JOIN dbo.[USER] u ON l.ListenerID = u.UserID " +
-            "WHERE o.OrderID = " + orderId);
-        return r.isEmpty() ? null : r.get(0);
+        try {
+            List<Tuple> rows = em.createNativeQuery(
+                "SELECT o.OrderID, " +
+                "ISNULL(u.FirstName, '') + ' ' + ISNULL(u.LastName, '') AS Customer, u.Email, " +
+                "o.OrderDate, o.OrderStatus, o.TotalAmount " +
+                "FROM dbo.[ORDERS] o " +
+                "JOIN dbo.[LISTENER] l ON o.ListenerID = l.ListenerID " +
+                "JOIN dbo.[USER] u ON l.ListenerID = u.UserID " +
+                "WHERE o.OrderID = " + orderId,
+                Tuple.class).getResultList();
+            if (rows.isEmpty()) return null;
+            return rows.get(0).toArray();
+        } catch (Exception e) { return null; }
     }
 
     @Transactional(readOnly = true)
@@ -398,15 +424,53 @@ public class AdminService {
     }
 
     @Transactional(readOnly = true)
+    @SuppressWarnings("unchecked")
     public List<Object[]> getAllPayments() {
-        return nativeList(
-            "SELECT p.PaymentID, p.OrderID, u.FirstName + ' ' + u.LastName AS Customer, " +
-            "p.PaymentDate, p.Amount, p.PaymentMethod, p.TransactionReference, p.PaymentStatus " +
-            "FROM dbo.[PAYMENT] p " +
-            "JOIN dbo.[ORDERS] o ON p.OrderID = o.OrderID " +
-            "JOIN dbo.[LISTENER] l ON o.ListenerID = l.ListenerID " +
-            "JOIN dbo.[USER] u ON l.ListenerID = u.UserID " +
-            "ORDER BY p.PaymentDate DESC");
+        try {
+            List<Tuple> rows = em.createNativeQuery(
+                "SELECT p.PaymentID, p.OrderID, " +
+                "ISNULL(u.FirstName, '') + ' ' + ISNULL(u.LastName, '') AS Customer, " +
+                "p.PaymentDate, p.Amount, p.PaymentMethod, p.TransactionReference, p.PaymentStatus " +
+                "FROM dbo.[PAYMENT] p " +
+                "JOIN dbo.[ORDERS] o ON p.OrderID = o.OrderID " +
+                "JOIN dbo.[LISTENER] l ON o.ListenerID = l.ListenerID " +
+                "JOIN dbo.[USER] u ON l.ListenerID = u.UserID " +
+                "ORDER BY p.PaymentDate DESC",
+                Tuple.class).getResultList();
+            List<Object[]> result = new ArrayList<>(rows.size());
+            for (Tuple t : rows) { result.add(t.toArray()); }
+            return result;
+        } catch (Exception e) { return List.of(); }
+    }
+
+    @Transactional(readOnly = true)
+    @SuppressWarnings("unchecked")
+    public Object[] getPaymentDetail(Long paymentId) {
+        try {
+            List<Tuple> rows = em.createNativeQuery(
+                "SELECT p.PaymentID, p.OrderID, " +
+                "ISNULL(u.FirstName, '') + ' ' + ISNULL(u.LastName, '') AS Customer, u.Email, " +
+                "p.PaymentDate, p.Amount, p.PaymentMethod, p.TransactionReference, p.PaymentStatus, " +
+                "o.OrderStatus, o.OrderDate, o.TotalAmount " +
+                "FROM dbo.[PAYMENT] p " +
+                "JOIN dbo.[ORDERS] o ON p.OrderID = o.OrderID " +
+                "JOIN dbo.[LISTENER] l ON o.ListenerID = l.ListenerID " +
+                "JOIN dbo.[USER] u ON l.ListenerID = u.UserID " +
+                "WHERE p.PaymentID = ?",
+                Tuple.class)
+                .setParameter(1, paymentId)
+                .getResultList();
+            if (rows.isEmpty()) return null;
+            return rows.get(0).toArray();
+        } catch (Exception e) { return null; }
+    }
+
+    @Transactional
+    public void deletePayment(Long paymentId) {
+        if (paymentId == null) return;
+        em.createNativeQuery("DELETE FROM dbo.[PAYMENT] WHERE PaymentID = ?")
+          .setParameter(1, paymentId)
+          .executeUpdate();
     }
 
     @Transactional
@@ -700,6 +764,20 @@ public class AdminService {
               .setParameter(2, status)
               .setParameter(3, complaintId)
               .executeUpdate();
+        }
+    }
+
+    @Transactional
+    public void deleteComplaint(Long complaintId) {
+        if (complaintId == null) {
+            throw new IllegalArgumentException("Invalid complaint ID.");
+        }
+        int deleted = em.createNativeQuery(
+            "DELETE FROM dbo.[COMPLAINT] WHERE ComplaintID = ?")
+            .setParameter(1, complaintId)
+            .executeUpdate();
+        if (deleted == 0) {
+            throw new IllegalArgumentException("Complaint not found.");
         }
     }
 

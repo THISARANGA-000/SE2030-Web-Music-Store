@@ -61,7 +61,15 @@
                 <div class="cart-item-info">
                     <h4 th:text="${item.itemTitle}">Album Title</h4>
                     <p th:text="${item.itemSubtitle}">Artist Name</p>
-                    <span style="font-size:0.8rem; color:var(--text-secondary); font-weight:600;"
+                    <div th:if="${item.album != null and item.album.hasDiscount()}" style="display:flex; align-items:center; gap:0.4rem;">
+                        <span style="font-size:0.8rem; text-decoration:line-through; color:var(--text-muted);"
+                              th:text="'$' + ${#numbers.formatDecimal(item.album.price, 1, 2)}">$9.99</span>
+                        <span style="font-size:0.85rem; color:var(--success); font-weight:700;"
+                              th:text="'Unit Price: $' + ${#numbers.formatDecimal(item.unitPrice, 1, 2)}">$7.99</span>
+                        <span th:if="${item.album.discountLabel != null}" style="font-size:0.68rem; font-weight:700; background:#E8F5E9; color:#2E7D32; padding:0.1rem 0.35rem; border-radius:4px;"
+                              th:text="${item.album.discountLabel}">20% OFF</span>
+                    </div>
+                    <span th:unless="${item.album != null and item.album.hasDiscount()}" style="font-size:0.8rem; color:var(--text-secondary); font-weight:600;"
                           th:text="'Unit Price: $' + ${#numbers.formatDecimal(item.unitPrice, 1, 2)}">$9.99</span>
                 </div>
 

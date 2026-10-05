@@ -50,14 +50,45 @@
                         </div>
                     </div>
 
-                    <!-- Current Support Response (if already responded) -->
-                    <div class="admin-form-card" th:if="${complaint[7] != null and !complaint[7].toString().isEmpty()}">
-                        <h3 style="font-size:1.05rem; font-weight:700; color:var(--text-primary); margin-bottom:0.75rem; display:flex; align-items:center; gap:0.5rem;">
-                            <i class="fa-solid fa-headset" style="color:var(--success);"></i> Current Support Response
-                        </h3>
-                        <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:var(--radius-sm); padding:1.25rem; font-size:0.95rem; line-height:1.75; color:var(--text-primary); white-space:pre-wrap;"
-                             th:text="${complaint[7]}">
-                            Existing response text...
+                    <!-- Current Support Response -->
+                    <div class="admin-form-card">
+                        <div class="support-response-card-header">
+                            <h3 class="support-response-card-title">
+                                <i class="fa-solid fa-headset" style="color:var(--brand-primary);"></i> Current Support Response
+                            </h3>
+                            <span th:if="${complaint[7] != null and !complaint[7].toString().trim().isEmpty()}"
+                                  class="support-response-pill-active">
+                                <i class="fa-solid fa-circle-check"></i> Responded
+                            </span>
+                            <span th:unless="${complaint[7] != null and !complaint[7].toString().trim().isEmpty()}"
+                                  class="support-response-pill-pending">
+                                <i class="fa-regular fa-clock"></i> Awaiting Response
+                            </span>
+                        </div>
+
+                        <!-- If response exists -->
+                        <div th:if="${complaint[7] != null and !complaint[7].toString().trim().isEmpty()}"
+                             class="support-response-box support-response-active">
+                            <div class="support-response-meta-row" th:if="${complaint[8] != null and !complaint[8].toString().isEmpty()}">
+                                <span class="support-response-timestamp">
+                                    <i class="fa-regular fa-calendar-check"></i> Resolved Date: <strong th:text="${complaint[8].toString().substring(0, 16)}">2026-08-22 14:00</strong>
+                                </span>
+                            </div>
+                            <div class="support-response-content" th:text="${complaint[7]}">
+                                Existing response text...
+                            </div>
+                        </div>
+
+                        <!-- If no response yet -->
+                        <div th:unless="${complaint[7] != null and !complaint[7].toString().trim().isEmpty()}"
+                             class="support-response-box support-response-empty">
+                            <div class="support-response-empty-icon">
+                                <i class="fa-regular fa-comment-dots"></i>
+                            </div>
+                            <div class="support-response-empty-text">
+                                <strong>No response has been added yet.</strong>
+                                <p>Use the form below to write and save an official response to this customer complaint.</p>
+                            </div>
                         </div>
                     </div>
 
@@ -129,16 +160,16 @@
                     </div>
 
                     <div>
-                        <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; display:block; margin-bottom:0.25rem;">Status</span>
+                        <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; display:block; margin-bottom:0.4rem;">Status</span>
                         <div>
                             <span th:switch="${complaint[6]}">
-                                <span th:case="'Open'"        class="chip chip-red"><i class="fa-solid fa-clock"></i> Pending</span>
-                                <span th:case="'Pending'"     class="chip chip-yellow"><i class="fa-solid fa-clock"></i> Pending</span>
-                                <span th:case="'In Progress'" class="chip chip-yellow"><i class="fa-solid fa-spinner"></i> In Progress</span>
-                                <span th:case="'InProgress'"  class="chip chip-yellow"><i class="fa-solid fa-spinner"></i> In Progress</span>
-                                <span th:case="'Resolved'"    class="chip chip-green"><i class="fa-solid fa-circle-check"></i> Resolved</span>
-                                <span th:case="'Closed'"      class="chip chip-gray"><i class="fa-solid fa-lock"></i> Closed</span>
-                                <span th:case="*"             class="chip chip-gray" th:text="${complaint[6]}">—</span>
+                                <span th:case="'Open'"        class="status-chip status-pending"><i class="fa-solid fa-clock"></i> Pending / Open</span>
+                                <span th:case="'Pending'"     class="status-chip status-pending"><i class="fa-solid fa-clock"></i> Pending</span>
+                                <span th:case="'In Progress'" class="status-chip status-inprogress"><i class="fa-solid fa-arrows-rotate fa-spin-pulse" style="--fa-animation-duration:3s;"></i> In Progress</span>
+                                <span th:case="'InProgress'"  class="status-chip status-inprogress"><i class="fa-solid fa-arrows-rotate fa-spin-pulse" style="--fa-animation-duration:3s;"></i> In Progress</span>
+                                <span th:case="'Resolved'"    class="status-chip status-resolved"><i class="fa-solid fa-circle-check"></i> Resolved</span>
+                                <span th:case="'Closed'"      class="status-chip status-closed"><i class="fa-solid fa-lock"></i> Closed</span>
+                                <span th:case="*"             class="status-chip status-closed" th:text="${complaint[6]}">—</span>
                             </span>
                         </div>
                     </div>
@@ -159,6 +190,16 @@
                         <a th:href="@{/admin/support/complaints}" class="btn-secondary" style="width:100%; text-align:center; display:block;">
                             <i class="fa-solid fa-arrow-left"></i> All Complaints
                         </a>
+                    </div>
+
+                    <div style="padding-top:0.5rem;">
+                        <form th:action="@{/admin/support/complaints/{id}/delete(id=${complaint[0]})}" method="post"
+                              onsubmit="return confirm('Are you sure you want to permanently delete this complaint? This action cannot be undone.');">
+                            <button type="submit" class="btn-secondary"
+                                    style="width:100%; text-align:center; display:block; padding:0.55rem 1rem; font-size:0.88rem; font-weight:600; color:#ef4444; border-color:#fecaca;">
+                                <i class="fa-solid fa-trash"></i> Delete Complaint
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>

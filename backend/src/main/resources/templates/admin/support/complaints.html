@@ -32,34 +32,29 @@
                 <!-- Toolbar: Filter buttons and Search box -->
                 <div class="admin-table-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; padding:1.25rem;">
                     <!-- Status Filter Tabs -->
-                    <div style="display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
-                        <button type="button" class="btn-secondary active-filter-btn" onclick="filterByStatus('all', this)"
-                                style="padding:0.35rem 0.75rem; font-size:0.8rem; border-radius:var(--radius-full); font-weight:600;">
-                            All
+                    <div class="complaint-status-filter-group">
+                        <button type="button" class="status-filter-btn active-filter-btn" onclick="filterByStatus('all', this)">
+                            <i class="fa-solid fa-list-ul"></i> All
                         </button>
-                        <button type="button" class="btn-secondary" onclick="filterByStatus('open', this)"
-                                style="padding:0.35rem 0.75rem; font-size:0.8rem; border-radius:var(--radius-full);">
-                            Pending / Open
+                        <button type="button" class="status-filter-btn filter-pending" onclick="filterByStatus('open', this)">
+                            <i class="fa-solid fa-clock"></i> Pending
                         </button>
-                        <button type="button" class="btn-secondary" onclick="filterByStatus('in progress', this)"
-                                style="padding:0.35rem 0.75rem; font-size:0.8rem; border-radius:var(--radius-full);">
-                            In Progress
+                        <button type="button" class="status-filter-btn filter-inprogress" onclick="filterByStatus('in progress', this)">
+                            <i class="fa-solid fa-arrows-rotate"></i> In Progress
                         </button>
-                        <button type="button" class="btn-secondary" onclick="filterByStatus('resolved', this)"
-                                style="padding:0.35rem 0.75rem; font-size:0.8rem; border-radius:var(--radius-full);">
-                            Resolved
+                        <button type="button" class="status-filter-btn filter-resolved" onclick="filterByStatus('resolved', this)">
+                            <i class="fa-solid fa-circle-check"></i> Resolved
                         </button>
-                        <button type="button" class="btn-secondary" onclick="filterByStatus('closed', this)"
-                                style="padding:0.35rem 0.75rem; font-size:0.8rem; border-radius:var(--radius-full);">
-                            Closed
+                        <button type="button" class="status-filter-btn filter-closed" onclick="filterByStatus('closed', this)">
+                            <i class="fa-solid fa-lock"></i> Closed
                         </button>
                     </div>
 
                     <!-- Search Input -->
                     <div style="display:flex; align-items:center; gap:0.5rem;">
                         <input type="text" id="complaintSearchInput" onkeyup="applyComplaintFilters()"
-                               placeholder="Search ID, listener, or subject..."
-                               class="form-control" style="font-size:0.82rem; padding:0.35rem 0.75rem; width:260px;">
+                                placeholder="Search ID, listener, or subject..."
+                                class="form-control" style="font-size:0.82rem; padding:0.35rem 0.75rem; width:260px;">
                     </div>
                 </div>
 
@@ -71,7 +66,7 @@
                                 <th>Listener</th>
                                 <th>Subject</th>
                                 <th style="width:115px;">Date</th>
-                                <th style="width:130px;">Status</th>
+                                <th style="width:140px;">Status</th>
                                 <th>Response</th>
                                 <th style="width:230px; text-align:right;">Actions / Quick Update</th>
                             </tr>
@@ -98,15 +93,15 @@
                                 <td th:text="${c[3] != null ? c[3].toString().substring(0,10) : '—'}">—</td>
                                 <td>
                                     <span th:switch="${c[4]}">
-                                        <span th:case="'Open'"        class="chip chip-red"><i class="fa-solid fa-clock"></i> Pending</span>
-                                        <span th:case="'Pending'"     class="chip chip-yellow"><i class="fa-solid fa-clock"></i> Pending</span>
-                                        <span th:case="'In Progress'" class="chip chip-yellow"><i class="fa-solid fa-spinner"></i> In Progress</span>
-                                        <span th:case="'InProgress'"  class="chip chip-yellow"><i class="fa-solid fa-spinner"></i> In Progress</span>
-                                        <span th:case="'Resolved'"    class="chip chip-green"><i class="fa-solid fa-circle-check"></i> Resolved</span>
-                                        <span th:case="'Closed'"      class="chip chip-gray"><i class="fa-solid fa-lock"></i> Closed</span>
-                                        <span th:case="*"             class="chip chip-gray" th:text="${c[4]}">—</span>
+                                        <span th:case="'Open'"        class="status-chip status-pending"><i class="fa-solid fa-clock"></i> Pending</span>
+                                        <span th:case="'Pending'"     class="status-chip status-pending"><i class="fa-solid fa-clock"></i> Pending</span>
+                                        <span th:case="'In Progress'" class="status-chip status-inprogress"><i class="fa-solid fa-arrows-rotate fa-spin-pulse" style="--fa-animation-duration:3s;"></i> In Progress</span>
+                                        <span th:case="'InProgress'"  class="status-chip status-inprogress"><i class="fa-solid fa-arrows-rotate fa-spin-pulse" style="--fa-animation-duration:3s;"></i> In Progress</span>
+                                        <span th:case="'Resolved'"    class="status-chip status-resolved"><i class="fa-solid fa-circle-check"></i> Resolved</span>
+                                        <span th:case="'Closed'"      class="status-chip status-closed"><i class="fa-solid fa-lock"></i> Closed</span>
+                                        <span th:case="*"             class="status-chip status-closed" th:text="${c[4]}">—</span>
                                     </span>
-                                </td>
+                                </td> </td>
                                 <td style="max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--text-secondary);"
                                     th:text="${c[5] != null and !c[5].isEmpty() ? c[5] : '—'}"
                                     th:title="${c[5]}">—</td>
@@ -127,6 +122,16 @@
                                             <input type="hidden" name="response" th:value="${c[5]}">
                                             <button type="submit" class="btn-primary" style="padding:0.25rem 0.5rem; font-size:0.75rem;" title="Quick Status Save">
                                                 <i class="fa-solid fa-check"></i>
+                                            </button>
+                                        </form>
+                                        <form th:action="@{/admin/support/complaints/{id}/delete(id=${c[0]})}" method="post"
+                                              style="display:inline;"
+                                              onsubmit="return confirm('Are you sure you want to delete this complaint? This action cannot be undone.');"
+                                              th:data-id="${c[0]}">
+                                            <button type="submit" class="btn-secondary"
+                                                    style="padding:0.35rem 0.65rem; font-size:0.78rem; color:#ef4444; border-color:#fecaca;"
+                                                    title="Delete Complaint">
+                                                <i class="fa-solid fa-trash"></i> Delete
                                             </button>
                                         </form>
                                     </div>
