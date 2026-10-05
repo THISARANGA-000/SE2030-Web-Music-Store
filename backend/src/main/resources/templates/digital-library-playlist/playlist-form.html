@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MelodyMart | Create Playlist</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+<div th:replace="~{fragments/listener-nav :: navbar(activeItem='playlists')}"></div>
+
+<main class="container" style="max-width:560px;">
+
+    <a th:href="@{/playlists}" class="back-link" style="display:inline-flex; align-items:center; gap:0.4rem; margin-bottom:1.5rem; color:var(--text-secondary); font-size:0.9rem; text-decoration:none;">
+        <i class="fa-solid fa-arrow-left"></i> Back to My Playlists
+    </a>
+
+    <div class="card" style="padding:2rem;">
+        <h1 class="page-title" style="margin-bottom:0.5rem; font-size:1.5rem;">
+            <i class="fa-solid fa-plus" style="color:var(--brand-primary); font-size:0.85em;"></i> Create Playlist
+        </h1>
+        <p style="color:var(--text-secondary); margin-bottom:1.5rem; font-size:0.95rem;">
+            Give your playlist a name to get started.
+        </p>
+
+        <div th:if="${errorMsg}" class="alert alert-error">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span th:text="${errorMsg}"></span>
+        </div>
+
+        <form th:action="@{/playlists}" method="post" id="createPlaylistForm">
+            <div class="form-group">
+                <label class="form-label" for="playlistNameInput">Playlist Name <span style="color:var(--error);">*</span></label>
+                <input type="text" id="playlistNameInput" name="playlistName" class="form-control"
+                       th:value="${playlistName}"
+                       placeholder="e.g. Workout, Study Music, Chill..."
+                       maxlength="100" required autofocus>
+                <span style="font-size:0.78rem; color:var(--text-muted);">Maximum 100 characters.</span>
+            </div>
+            <div style="display:flex; gap:0.75rem; margin-top:1.5rem;">
+                <button type="submit" class="btn-primary" id="submitCreatePlaylist">
+                    <i class="fa-solid fa-plus"></i> Create Playlist
+                </button>
+                <a th:href="@{/playlists}" class="btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+</main>
+
+<footer class="footer"><p>&copy; 2026 MelodyMart Digital Music Store &mdash; All rights reserved.</p></footer>
+</body>
+</html>

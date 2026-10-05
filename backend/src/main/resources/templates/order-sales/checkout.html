@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MelodyMart | Checkout</title>
+    <meta name="description" content="Complete your purchase on MelodyMart.">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+<!-- Navigation -->
+<div th:replace="~{fragments/listener-nav :: navbar(activeItem='cart')}"></div>
+
+<main class="container">
+    <div class="page-header">
+        <h1 class="page-title"><i class="fa-solid fa-lock" style="font-size:0.85em; color:var(--success);"></i> Secure Checkout</h1>
+        <p class="page-subtitle">Review your order details and confirm digital music purchase.</p>
+    </div>
+
+    <div class="checkout-grid">
+
+        <!-- Payment & Method Details -->
+        <div class="checkout-card">
+            <h3 style="font-size:1.15rem; font-weight:700; color:var(--text-primary); margin-bottom:1.25rem;">
+                <i class="fa-solid fa-credit-card" style="color:var(--brand-primary);"></i> Payment Method
+            </h3>
+
+            <form th:action="@{/checkout/confirm}" method="post" id="checkoutForm">
+                <label class="payment-option-label" style="border:1.5px solid #D4AF37; background:#FFF7E6; color:#12355B;">
+                    <input type="radio" name="paymentMethod" value="Demo Payment" checked style="accent-color:#8A6500; width:1.15rem; height:1.15rem; cursor:pointer;">
+                    <i class="fa-solid fa-circle-check" style="font-size:1.25rem; color:#8A6500;"></i>
+                    <div style="flex:1;">
+                        <strong style="color:#12355B; display:block; font-size:0.975rem; font-weight:700; margin-bottom:0.2rem;">Demo Simulation Payment</strong>
+                        <span style="font-size:0.825rem; color:#8A6500; font-weight:500;">One-click instant demonstration checkout (No external gateway required)</span>
+                    </div>
+                </label>
+
+                <div style="margin-top:1.5rem; background:#FFF7E6; border:1px solid #D4AF37; border-radius:var(--radius-sm); padding:1rem 1.15rem;">
+                    <div style="display:flex; align-items:center; gap:0.5rem; color:#12355B; font-size:0.85rem; font-weight:500;">
+                        <i class="fa-solid fa-shield-halved" style="color:#8A6500; font-size:1rem;"></i>
+                        <span>This checkout will generate your order record and submit it for administrator verification.</span>
+                    </div>
+                </div>
+
+                <div style="margin-top:1.75rem;">
+                    <button type="submit" class="btn-primary" id="confirmPaymentBtn" style="width:100%; justify-content:center; padding:0.85rem; font-size:1rem;">
+                        <i class="fa-solid fa-check-circle"></i> Confirm Payment
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Order Summary Column -->
+        <div class="cart-summary-card">
+            <h3 style="font-size:1.15rem; font-weight:700; margin-bottom:1.25rem; color:var(--text-primary);">
+                Order Summary
+            </h3>
+
+            <div th:each="item : ${cartItems}" style="display:flex; justify-content:space-between; margin-bottom:0.75rem; font-size:0.875rem;">
+                <span style="color:var(--text-primary); font-weight:500;" th:text="${item.itemTitle} + ' (x' + ${item.quantity} + ')'">Album Title</span>
+                <span style="color:var(--text-primary); font-weight:600;" th:text="'$' + ${#numbers.formatDecimal(item.subtotal, 1, 2)}">$9.99</span>
+            </div>
+
+            <div class="summary-divider"></div>
+
+            <div class="summary-row">
+                <span>Subtotal</span>
+                <span th:text="'$' + ${#numbers.formatDecimal(cartTotal, 1, 2)}">$0.00</span>
+            </div>
+            <div class="summary-row">
+                <span>Taxes &amp; Fees</span>
+                <span>$0.00</span>
+            </div>
+
+            <div class="summary-divider"></div>
+
+            <div class="summary-total">
+                <span>Total Due</span>
+                <span style="font-size:1.4rem; font-weight:800; color:var(--text-primary);"
+                      th:text="'$' + ${#numbers.formatDecimal(cartTotal, 1, 2)}">$0.00</span>
+            </div>
+
+            <div style="text-align:center;">
+                <a th:href="@{/cart}" style="font-size:0.85rem; color:var(--brand-primary); font-weight:500;">
+                    <i class="fa-solid fa-arrow-left"></i> Return to Cart
+                </a>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<footer class="footer">
+    <p>&copy; 2026 MelodyMart Digital Music Store &mdash; All rights reserved.</p>
+</footer>
+
+</body>
+</html>

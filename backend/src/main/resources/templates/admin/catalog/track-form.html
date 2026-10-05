@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MelodyMart Admin | <span th:text="${formMode == 'add' ? 'Add' : 'Edit'}"></span> Track</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+<div class="admin-layout">
+    <div th:replace="~{admin/fragments/sidebar :: sidebar(activeItem='tracks')}"></div>
+    <div class="admin-content">
+        <div class="admin-topbar">
+            <nav class="admin-breadcrumb">
+                <a th:href="@{/admin/dashboard}">Dashboard</a>
+                <span class="admin-breadcrumb-sep">/</span>
+                <a th:href="@{/admin/catalog/tracks}">Tracks</a>
+                <span class="admin-breadcrumb-sep">/</span>
+                <span class="admin-breadcrumb-current" th:text="${formMode == 'add' ? 'Add Track' : 'Edit Track'}"></span>
+            </nav>
+        </div>
+        <main class="admin-main">
+            <div class="admin-page-header">
+                <div>
+                    <h1 class="admin-page-title" th:text="${formMode == 'add' ? 'Add New Track' : 'Edit Track'}"></h1>
+                </div>
+            </div>
+            
+            <div class="admin-form-wrap">
+                <form th:action="${formMode == 'add'} ? @{/admin/catalog/tracks/add} : @{/admin/catalog/tracks/edit/{id}(id=${track.trackId})}" method="post">
+                    
+                    <div class="form-group">
+                        <label for="trackTitle">Track Title *</label>
+                        <input type="text" id="trackTitle" name="trackTitle" th:value="${track.trackTitle}" required class="form-control">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="trackNumber">Track Number *</label>
+                            <input type="number" id="trackNumber" name="trackNumber" th:value="${track.trackNumber}" required class="form-control" min="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="duration">Duration (seconds) *</label>
+                            <input type="number" id="duration" name="duration" th:value="${track.duration}" required class="form-control" min="1">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="audioFileUrl">Audio File URL <span style="color:var(--text-muted); font-weight:400;">(optional)</span></label>
+                        <input type="text" id="audioFileUrl" name="audioFileUrl" th:value="${track.audioFileUrl}" class="form-control"
+                               placeholder="e.g. /assets/audio/song1.mp3">
+                        <small style="color:var(--text-muted); font-size:0.8rem; margin-top:0.25rem; display:block;">
+                            <strong>Example:</strong> <code>/assets/audio/song1.mp3</code>
+                            &nbsp;&mdash;&nbsp;Place the MP3 file at:
+                            <code>backend/src/main/resources/static/assets/audio/song1.mp3</code><br>
+                            The browser URL will be: <code>http://localhost:8080/assets/audio/song1.mp3</code><br>
+                            Leave blank to display &ldquo;Audio preview unavailable&rdquo; instead of a broken player.
+                        </small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="albumId">Album *</label>
+                        <select id="albumId" name="albumId" required class="form-control">
+                            <option value="">-- Select Album --</option>
+                            <option th:each="a : ${albums}" th:value="${a.albumId}" th:text="${a.albumTitle}"
+                                    th:selected="${track.album != null and track.album.albumId == a.albumId}"></option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-actions" style="margin-top:2rem;display:flex;gap:1rem;">
+                        <button type="submit" class="btn-primary">
+                            <i class="fa-solid fa-save"></i> Save Track
+                        </button>
+                        <a th:href="@{/admin/catalog/tracks}" class="btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </main>
+        <footer class="admin-footer">&copy; 2026 MelodyMart &mdash; All rights reserved.</footer>
+    </div>
+</div>
+</body>
+</html>

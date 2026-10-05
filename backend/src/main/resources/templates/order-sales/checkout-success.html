@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase Confirmed | MelodyMart</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+<!-- Navigation -->
+<div th:replace="~{fragments/listener-nav :: navbar(activeItem='cart')}"></div>
+
+<main class="container" style="display:flex; justify-content:center; align-items:center; min-height:65vh;">
+    <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-lg); padding:3rem 2.5rem; max-width:520px; text-align:center; box-shadow:var(--shadow-card);">
+        <div style="width:72px; height:72px; border-radius:50%; background:#ecfdf5; color:var(--success); display:inline-flex; align-items:center; justify-content:center; font-size:2.4rem; margin-bottom:1.5rem; border:1px solid #a7f3d0;">
+            <i class="fa-solid fa-check"></i>
+        </div>
+
+        <h1 style="font-size:1.85rem; font-weight:800; color:var(--text-primary); margin-bottom:0.4rem;">Payment Successful!</h1>
+        <p style="color:var(--text-secondary); font-size:1.05rem; font-weight:600; margin-bottom:1rem;">
+            Your order has been successfully submitted.
+        </p>
+        <p style="color:var(--text-muted); font-size:0.875rem; margin-bottom:1.25rem;" th:if="${orderId}">
+            Order Reference: <strong>#<span th:text="${orderId}">101</span></strong>
+        </p>
+
+        <div style="background:#FFF7E6; border:1px solid #D4AF37; border-radius:var(--radius-sm); padding:1.15rem 1.25rem; margin-bottom:1.75rem; text-align:left; font-size:0.925rem; color:#12355B; line-height:1.55; font-weight:500;">
+            <i class="fa-solid fa-clock" style="color:#8A6500; margin-right:0.4rem; font-size:1rem;"></i>
+            Your purchase is waiting for administrator approval. Once accepted by the admin team, your music will immediately be available in <strong style="color:#8A6500; font-weight:700;">My Library</strong> for streaming and download.
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:0.75rem;">
+            <a th:href="@{/my-library}" class="btn-primary" style="justify-content:center; padding:0.75rem;">
+                <i class="fa-solid fa-music"></i> Go to My Library
+            </a>
+            <a th:href="@{/albums}" class="btn-secondary" style="justify-content:center; padding:0.75rem;">
+                <i class="fa-solid fa-compact-disc"></i> Continue Shopping
+            </a>
+        </div>
+    </div>
+</main>
+
+<footer class="footer">
+    <p>&copy; 2026 MelodyMart Digital Music Store &mdash; All rights reserved.</p>
+</footer>
+
+</body>
+</html>
